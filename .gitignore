@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.db
+*.sqlite
+appsettings.json
+appsettings.Development.json
+node_modules/
+wwwroot/
