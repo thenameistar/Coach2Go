@@ -1,0 +1,18 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+@using MudBlazor.Services
+
+<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
+<MudLayout Class="main-layout">
+
+    <MudMainContent Class="main-content">
+        @Body
+    </MudMainContent>
+
+    <BottomNavMenu />
+</MudLayout>
+
+@code {
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+}

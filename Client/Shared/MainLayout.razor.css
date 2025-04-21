@@ -1,0 +1,15 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.mud-layout {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.mud-main-content {
+    flex: 1;
+    overflow-y: auto;
+}
