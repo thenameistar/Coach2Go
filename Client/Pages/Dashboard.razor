@@ -1,0 +1,165 @@
+﻿@page "/"
+@using MudBlazor
+@using Coach2Go.Shared
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0 ma-0">
+
+    <!-- Welcome message -->
+    <MudText Typo="Typo.h4" Class="mb-1" Style="color: white;">Hi Ana, ready to train?</MudText>
+    <MudText Typo="Typo.subtitle2" Class="mb-4" Style="font-style:italic; color: white;">
+        You don’t need to feel ready, you just need to begin.
+    </MudText>
+
+    <!-- Activity and Plan buttons -->
+    <MudStack Row Justify="Justify.SpaceAround" Spacing="2" Class="px-4 pt-4">
+        <MudButton 
+            Variant="@(NavigationManager.Uri.Contains("/dashboard") ? Variant.Filled : Variant.Outlined)"
+            Color="Color.Primary"
+            @onclick="@(() => NavigationManager.NavigateTo("/dashboard"))"
+            Class="rounded-lg px-4"
+            Style="min-width: 100px;">
+            Activity
+        </MudButton>
+        
+        <MudButton 
+            Variant="@(NavigationManager.Uri.Contains("/plan") ? Variant.Filled : Variant.Outlined)"
+            Color="Color.Primary"
+            @onclick="@(() => NavigationManager.NavigateTo("/plan"))"
+            Class="rounded-lg px-4"
+            Style="min-width: 100px;">
+            Plan
+        </MudButton>
+    </MudStack>
+
+    <!-- Daily Workout Section -->
+    <MudText Typo="Typo.h6" Class="mt-4 mb-2 px-4">Your Daily Workout</MudText>
+    <MudPaper Class="daily-workout-card" Elevation="2" @onclick="@(() => NavigationManager.NavigateTo("/dailyworkout"))" Style="cursor: pointer;">
+        <MudImage Src="images/workout1.jpg" Alt="Workout image" Class="workout-img" />
+    </MudPaper>
+
+    <!-- Scrollable Today’s Goals widgets -->
+    <MudText Typo="Typo.h6" Class="mb-2 px-4" Style="color: white;">Today’s Goals</MudText>
+    <div class="scroll-wrapper">
+      <div class="goal-scroll-container">
+        <MudPaper Class="goal-card">
+            <MudText Typo="Typo.subtitle1">Write your 3 goals</MudText>
+            <MudTextField T="string" @bind-Value="_goal1" Label="Goal 1" Variant="Variant.Outlined" />
+        </MudPaper>
+
+        <MudPaper Class="goal-card">
+            <MudText Typo="Typo.subtitle1">Water Intake Tracker</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.Opacity" Class="my-2" />
+            <MudButtonGroup Color="Color.Secondary">
+                <MudButton>250ml</MudButton>
+                <MudButton>500ml</MudButton>
+                <MudButton>1L</MudButton>
+            </MudButtonGroup>
+        </MudPaper>
+
+        <MudPaper Class="goal-card">
+            <MudText Typo="Typo.subtitle1">Step Tracker</MudText>
+            <MudText Typo="Typo.body2">Target: 10,000 steps</MudText>
+            <MudText Typo="Typo.h6">6,330 steps</MudText>
+            <MudProgressLinear Value="63" Color="Color.Primary" Class="mt-2" />
+        </MudPaper>
+
+        <MudPaper Class="goal-card">
+            <MudText Typo="Typo.subtitle1">How do you feel today?</MudText>
+            <MudText Typo="Typo.caption">(Tap the emoji that fits)</MudText>
+            <MudText Class="mt-2" Style="font-size: 1.5rem;">😩 😥 😐 🙂 😊</MudText>
+        </MudPaper>
+
+        <MudPaper Class="goal-card d-flex align-center justify-center">
+            <MudStack AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h5">+</MudText>
+                <MudText Typo="Typo.caption">Add Widget</MudText>
+            </MudStack>
+        </MudPaper>
+      </div>
+    </div>
+    <MudText Typo="Typo.h6" Class="px-4 mt-4 mb-1" Style="color: white;">My challenge</MudText>
+    <MudPaper Class="streak-widget mx-4 mb-6">
+      <MudText Typo="Typo.subtitle2" Class="mb-2" Style="color: white;">7 Day Milestone</MudText>
+    <MudProgressLinear Value="42" Color="Color.Primary" Class="streak-bar" Style="height: 14px;" Rounded />
+    </MudPaper>
+    <MudText Typo="Typo.h6" Class="px-4 mt-4 mb-2" Style="color: white;">Active Recovery</MudText>
+    <MudPaper Class="recovery-card mx-4 mb-6" @onclick="@(() => NavigationManager.NavigateTo("/workout"))" Style="cursor: pointer;">
+      <MudImage Src="images/yoga.jpg" Alt="Active Recovery" Class="recovery-img" />
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    private string _goal1 = string.Empty;
+}
+
+<style scoped>
+.daily-workout-card {
+    margin: 0 1rem 1.5rem 1rem;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+.daily-workout-card:hover {
+    transform: scale(1.02);
+}
+
+.workout-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+
+.scroll-wrapper {
+    overflow-x: auto;
+    padding: 0 1rem;
+}
+
+.goal-scroll-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+}
+
+.goal-card {
+    flex: 0 0 85%;
+    background: linear-gradient(135deg, #c477ff, #d08eff);
+    color: white;
+    padding: 1rem;
+    border-radius: 20px;
+    min-width: 250px;
+    max-width: 300px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.goal-card:hover {
+    transform: scale(1.02);
+}
+
+.streak-widget {
+    background: linear-gradient(135deg, #c477ff, #d08eff);
+    border-radius: 20px;
+    padding: 1rem;
+    color: white;
+}
+
+.streak-bar {
+    background-color: white; /* This is the empty part */
+    --mud-palette-primary: black; /* This changes the filled progress to black */
+}
+.recovery-card {
+    border-radius: 25px;
+    overflow: hidden;
+    padding: 0;
+}
+
+.recovery-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+}
+</style>

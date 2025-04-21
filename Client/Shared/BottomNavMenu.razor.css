@@ -1,0 +1,30 @@
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px; /* increased for taller bar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to top, #a24bdc, #c994f8);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    padding-bottom: env(safe-area-inset-bottom); /* helpful on iPhones with nav bars */
+}
+
+.nav-icons-wrapper {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%; /* controls how spread out icons are */
+    padding: 0 28px; /* Add horizontal padding to balance left/right */
+    height: 100%;
+}
+
+.mud-icon-button {
+    color: white !important;
+    font-size: 2.2rem;
+}
