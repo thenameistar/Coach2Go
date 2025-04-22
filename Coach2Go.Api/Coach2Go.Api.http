@@ -1,0 +1,6 @@
+@Coach2Go.Api_HostAddress = http://localhost:5136
+
+GET {{Coach2Go.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

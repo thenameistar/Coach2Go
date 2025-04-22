@@ -1,1 +1,114 @@
 @page "/workout"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+
+<MudPaper Class="top-bar" Elevation="0" Style="width: 100%; padding-top: 1rem;">
+
+    <MudGrid Class="px-4" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+
+        <MudItem xs="6">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           Color="Color.Primary"
+                           Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
+                           OnClick="NavigateBackToDashboard" />
+        </MudItem>
+
+        <MudItem xs="6" Class="d-flex justify-end">
+            <MudStack Row = "true" Spacing="1" AlignItems="AlignItems.Center">
+                <MudIconButton Icon="@Icons.Material.Filled.Timer"
+                               Color="Color.Primary"
+                               Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;" />
+                <MudIconButton Icon="@Icons.Material.Filled.Bookmark"
+                               Color="Color.Primary"
+                               Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;" />
+            </MudStack>
+        </MudItem>
+
+    </MudGrid>
+
+</MudPaper>
+
+<!-- Workout Title -->
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mt-2 mb-2">
+    Full-Body Workout
+</MudText> 
+
+<!-- Image -->
+<MudImage Src="images/workout1.jpg" Alt="Workout Image" Class="mb-3" Style="width: 100%; border-radius: 0;" />
+
+<!-- Workout Info Box -->
+<MudPaper Class="info-box" Elevation="0">
+        <MudGrid>
+            <MudItem xs="6"><b>Target Muscles:</b></MudItem>
+            <MudItem xs="6">Chest, Glutes, Core</MudItem>
+            <MudItem xs="6"><b>Level:</b></MudItem>
+            <MudItem xs="6">Beginner</MudItem>
+            <MudItem xs="6"><b>Equipment:</b></MudItem>
+            <MudItem xs="6">Bodyweight</MudItem>
+            <MudItem xs="6"><b>Duration:</b></MudItem>
+            <MudItem xs="6">30 min</MudItem>
+        </MudGrid>
+</MudPaper>
+
+<!-- Exercise List -->
+<MudGrid Class="mt-2 px-4" AlignItems="AlignItems.Center">
+    <!-- Image column -->
+    <MudItem xs="2">
+        <MudPaper Class="icon-box">
+            <MudImage Src="images/jumping-jack.png" Alt="Jumping Jacks" Width="32" />
+            </MudPaper>
+    </MudItem>
+
+    <!-- Text column -->
+    <MudItem xs="10">
+        <MudText Typo="Typo.subtitle1" Class="text-white">Jumping Jacks</MudText>
+        <MudText Typo="Typo.caption" Class="text-white">40 secs</MudText>
+    </MudItem>
+</MudGrid>
+
+    <!-- Squats -->
+<MudGrid Class="mt-2 px-4" AlignItems="AlignItems.Center">
+    <MudItem xs="2">
+        <MudPaper Class="icon-box">
+            <MudImage Src="images/squat.png" Alt="Jumping Jacks" Width="32" />
+            </MudPaper>
+    </MudItem>
+
+    <MudItem xs="10">
+        <MudText Typo="Typo.subtitle1" Class="text-white">Squats</MudText>
+        <MudText Typo="Typo.caption" Class="text-white">12 reps</MudText>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    private void NavigateBackToDashboard()
+    {
+        NavigationManager.NavigateTo("/dashboard");
+    }
+}
+
+<style scoped>
+.info-box {
+    background: linear-gradient(135deg, #a24bdc, #c994f8);
+    padding: 1rem;
+    border-radius: 20px;
+    margin: 0 1rem;
+    color: black;
+}
+
+.icon-box {
+    background-color: white;
+    border-radius: 16px;
+    aspect-ratio: 1 / 1;          /* keeps it a square */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px;
+    width: 48px;                  /* fixed width to avoid stretching */
+}
+
+.text-purple {
+    color: #c994f8;
+}
+</style>
