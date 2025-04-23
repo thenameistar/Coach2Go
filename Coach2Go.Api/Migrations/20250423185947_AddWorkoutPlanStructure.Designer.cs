@@ -2,6 +2,7 @@
 using Coach2Go.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Coach2Go.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250423185947_AddWorkoutPlanStructure")]
+    partial class AddWorkoutPlanStructure
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,25 +51,7 @@ namespace Coach2Go.Api.Migrations
 
                     b.HasIndex("WorkoutSessionId");
 
-                    b.ToTable("Exercises");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Details = "40 secs",
-                            ImagePath = "images/jumping-jack.png",
-                            Name = "Jumping Jacks",
-                            WorkoutSessionId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Details = "12 reps",
-                            ImagePath = "images/squat.png",
-                            Name = "Squats",
-                            WorkoutSessionId = 1
-                        });
+                    b.ToTable("Exercises", (string)null);
                 });
 
             modelBuilder.Entity("Coach2Go.Api.Models.User", b =>
@@ -98,18 +83,11 @@ namespace Coach2Go.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Duration")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Experience")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Goal")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Intensity")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -124,18 +102,7 @@ namespace Coach2Go.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("WorkoutPlans");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Duration = 20,
-                            Experience = "Beginner",
-                            Goal = "Lose Weight",
-                            Intensity = "Low",
-                            Type = "Bodyweight"
-                        });
+                    b.ToTable("WorkoutPlans", (string)null);
                 });
 
             modelBuilder.Entity("Coach2Go.Api.Models.WorkoutSession", b =>
@@ -150,9 +117,6 @@ namespace Coach2Go.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Week")
-                        .HasColumnType("integer");
-
                     b.Property<int>("WorkoutPlanId")
                         .HasColumnType("integer");
 
@@ -160,16 +124,7 @@ namespace Coach2Go.Api.Migrations
 
                     b.HasIndex("WorkoutPlanId");
 
-                    b.ToTable("WorkoutSessions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Title = "Core Burn",
-                            Week = 1,
-                            WorkoutPlanId = 1
-                        });
+                    b.ToTable("WorkoutSessions", (string)null);
                 });
 
             modelBuilder.Entity("Coach2Go.Api.Models.Exercise", b =>

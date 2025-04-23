@@ -1,6 +1,5 @@
 ﻿@page "/"
 @using MudBlazor
-@using Coach2Go.Shared
 @inject NavigationManager NavigationManager
 
 <MudContainer MaxWidth="MaxWidth.False" Class="pa-0 ma-0">
@@ -33,7 +32,7 @@
     </MudStack>
 
     <!-- Daily Workout Section -->
-    <MudPaper Class="daily-workout-card" Elevation="2" @onclick="@(() => NavigationManager.NavigateTo("/workout"))" Style="cursor: pointer;">
+    <MudPaper Class="daily-workout-card" Elevation="2" @onclick="@(() => NavigationManager.NavigateTo("/dailyworkout"))" Style="cursor: pointer;">
        <MudImage Src="images/workout1.jpg" Alt="Workout image" Class="workout-img" />
     </MudPaper>
 
@@ -146,8 +145,8 @@
 }
 
 .streak-bar {
-    background-color: white; /* This is the empty part */
-    --mud-palette-primary: black; /* This changes the filled progress to black */
+    background-color: white; 
+    --mud-palette-primary: black; 
 }
 .recovery-card {
     border-radius: 25px;
