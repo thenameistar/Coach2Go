@@ -13,9 +13,4 @@
     <PackageReference Include="MudBlazor" Version="8.5.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Shared\Coach2Go.Shared.csproj" />
-  </ItemGroup>
-  
-
 </Project>

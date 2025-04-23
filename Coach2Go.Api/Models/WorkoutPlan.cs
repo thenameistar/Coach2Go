@@ -2,17 +2,19 @@ namespace Coach2Go.Api.Models
 {
     public class WorkoutPlan
     {
-        public int Id { get; set; } // ✅ Primary key
+        public int Id { get; set; }
 
-        public string Goal { get; set; } = default!;
-        public string Type { get; set; } = default!;
-        public string Experience { get; set; } = default!;
+        public string Goal { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Experience { get; set; } = string.Empty;
+        public int Duration { get; set; }  // in minutes
+        public string Intensity { get; set; } = string.Empty;
 
-        // Foreign key to User
-        public int UserId { get; set; }
-        public User User { get; set; } = default!;
+        // If you're assigning to user onboarding, keep this
+        public int? UserId { get; set; }
+        public User? User { get; set; }
 
-        // Navigation to Exercises
-        public List<Exercise> Exercises { get; set; } = new();
+        // Change this: a plan now contains sessions
+        public List<WorkoutSession> Sessions { get; set; } = new();
     }
 }

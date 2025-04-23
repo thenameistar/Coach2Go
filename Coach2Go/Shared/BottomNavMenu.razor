@@ -1,11 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @using MudBlazor
-@namespace Coach2Go.Client.Shared
+@namespace Coach2Go.Shared
 @inject NavigationManager NavigationManager
 
 <MudPaper Class="bottom-nav" Square Style="background: linear-gradient(to top, #a24bdc, #c994f8) !important;">
      <div class="nav-icons-wrapper">
-        <MudIconButton Icon="@Icons.Material.Filled.Home" Size="Size.Large" OnClick="@(() => NavigationManager.NavigateTo("/dashboard"))" />
+        <MudIconButton Icon="@Icons.Material.Filled.Home" Size="Size.Large" OnClick="@(() => NavigationManager.NavigateTo("/"))" />
         <MudIconButton Icon="@Icons.Material.Filled.FitnessCenter" Size="Size.Large" OnClick="@(() => NavigationManager.NavigateTo("/workout"))" />
         <MudIconButton Icon="@Icons.Material.Filled.BarChart" Size="Size.Large" OnClick="@(() => NavigationManager.NavigateTo("/progress"))" />
         <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Size="Size.Large" OnClick="@(() => NavigationManager.NavigateTo("/profile"))" />

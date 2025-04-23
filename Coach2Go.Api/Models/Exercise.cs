@@ -1,15 +1,12 @@
 namespace Coach2Go.Api.Models
 {
     public class Exercise
-    {
-        public int Id { get; set; } // ✅ Primary key
+    { public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Details { get; set; } = string.Empty;
+    public string ImagePath { get; set; } = string.Empty;
 
-        public string Name { get; set; } = default!;
-        public string ImagePath { get; set; } = default!;
-        public string RepsOrDuration { get; set; } = default!;
-
-        // Foreign key reference to WorkoutPlan
-        public int WorkoutPlanId { get; set; }
-        public WorkoutPlan WorkoutPlan { get; set; } = default!;
+    public int WorkoutSessionId { get; set; }
+    public WorkoutSession WorkoutSession { get; set; } = default!;
     }
 }
