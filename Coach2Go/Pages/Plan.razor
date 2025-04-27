@@ -1,3 +1,112 @@
-﻿@page "/plan"
+﻿@page "/plan/{PlanId:int}"
+@using Coach2Go.Shared.Dtos
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
 
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-0 ma-0">
 
+    <!-- Welcome -->
+    <MudText Typo="Typo.h4" Class="mb-1" Style="color: white;">Hi Ana, ready to train?</MudText>
+    <MudText Typo="Typo.subtitle2" Class="mb-4" Style="font-style:italic; color: white;">
+        You don’t need to feel ready, you just need to begin.
+    </MudText>
+
+    <!-- Activity & Plan toggle -->
+    <MudStack Row Justify="Justify.SpaceAround" Spacing="2" Class="px-4 pt-4">
+        <MudButton 
+            Variant="@(NavigationManager.Uri.Contains("/") ? Variant.Filled : Variant.Outlined)"
+            Color="Color.Primary"
+            OnClick="@(() => NavigationManager.NavigateTo("/"))"
+            Class="rounded-lg px-4" Style="min-width: 100px;">
+            Activity
+        </MudButton>
+
+        <MudButton 
+            Variant="@(NavigationManager.Uri.Contains("/plan") ? Variant.Filled : Variant.Outlined)"
+            Color="Color.Primary"
+            OnClick="@(() => NavigationManager.NavigateTo("/plan/1"))"
+            Class="rounded-lg px-4" Style="min-width: 100px;">
+            Plan
+        </MudButton>
+    </MudStack>
+
+    <!-- Plan card -->
+    <MudPaper Class="my-4 mx-4 px-4 py-2" Style="border-radius: 16px; background: linear-gradient(to right, #a24bdc, #c994f8); color: white;">
+        <MudText Typo="Typo.subtitle1" Align="Align.Center">Your Plan</MudText>
+        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-2">@workoutPlan?.Type</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="mx-auto d-block mb-2 rounded-pill" Style="text-transform:none;">
+            Change
+        </MudButton>
+    </MudPaper>
+
+    <!-- Week Tabs -->
+    <MudTabs Rounded="true" Centered="true" Color="Color.Primary" Class="mb-4">
+        @foreach (var week in Weeks)
+        {
+            <MudTabPanel Text=@($"Week {week}")>
+                @if (week <= unlockedWeek)
+                {
+                    @foreach (var session in workoutPlan?.Sessions?.Where(s => s.Week == week) ?? Enumerable.Empty<WorkoutSessionDto>())
+                    {
+                        <MudText Class="mx-4 mb-1 text-white" Typo="Typo.h6">@session.Day</MudText>
+
+                        <MudPaper Class="mx-4 my-2" Style="border-radius: 20px; overflow: hidden;">
+                            <div style="position: relative; height: 120px; border-radius: 20px;">
+                                <MudImage Src="@session.ImagePath"
+                                Alt="@session.Title"
+                                Style="object-fit: cover; width: 100%; height: 100%; border-radius: 20px;" />
+                                <div style="position: absolute; top: 10px; left: 15px; color: white;">
+                                    <MudText Typo="Typo.subtitle1" Class="text-shadow">@session.Title</MudText>
+                                </div>
+                                
+                                <div style="position: absolute; top: 10px; right: 15px; color: white;">
+                                    <MudText Typo="Typo.subtitle2" Class="text-shadow">@($"{session.Duration}min")</MudText>
+                                </div>
+                            </div>
+                        </MudPaper>
+                    }
+                }
+                else
+                {
+                    <MudGrid Class="h-100" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                        <MudItem>
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center" JustifyContent="Justify.Center">
+                                <MudText Align="Align.Center" Class="text-white" Typo="Typo.h6">
+                                    Stay on track – unlock Week @week by completing this week’s workouts.
+                                </MudText>
+                                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" Class="mt-4" Style="font-size: 80px; color:white;" />
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                }
+            </MudTabPanel>
+        }
+    </MudTabs>
+</MudContainer>
+
+@code {
+    [Parameter] public int PlanId { get; set; }
+
+    private WorkoutPlanDto? workoutPlan;
+    private List<int> Weeks = new();
+    private int unlockedWeek = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        workoutPlan = await Http.GetFromJsonAsync<WorkoutPlanDto>($"api/workout/plan/{PlanId}");
+
+        if (workoutPlan?.Sessions != null)
+        {
+            Weeks = workoutPlan.Sessions
+                .Select(s => s.Week)
+                .Distinct()
+                .OrderBy(w => w)
+                .ToList();
+        }
+    }
+}
+<style>
+.text-shadow {
+    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+}
+</style>

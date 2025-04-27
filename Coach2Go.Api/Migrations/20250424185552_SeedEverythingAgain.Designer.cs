@@ -2,6 +2,7 @@
 using Coach2Go.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Coach2Go.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250424185552_SeedEverythingAgain")]
+    partial class SeedEverythingAgain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,13 +173,6 @@ namespace Coach2Go.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Day")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Duration")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("text");
@@ -201,121 +197,9 @@ namespace Coach2Go.Api.Migrations
                         new
                         {
                             Id = 1,
-                            Day = "Monday",
-                            Duration = 30,
                             ImagePath = "images/workout1.jpg",
                             Title = "Full Body",
                             Week = 1,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Day = "Tuesday",
-                            Duration = 30,
-                            ImagePath = "images/cardiocore.jpg",
-                            Title = "Cardio & Core",
-                            Week = 1,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Day = "Wednesday",
-                            Duration = 20,
-                            ImagePath = "images/activerecovery1.jpg",
-                            Title = "Active Recovery",
-                            Week = 1,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Day = "Thursday",
-                            Duration = 25,
-                            ImagePath = "images/lowerbody.jpg",
-                            Title = "Lower Body",
-                            Week = 1,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Day = "Friday",
-                            Duration = 30,
-                            ImagePath = "images/hiit.jpg",
-                            Title = "HIIT",
-                            Week = 1,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Day = "Saturday",
-                            Duration = 20,
-                            ImagePath = "images/yoga.jpg",
-                            Title = "Yoga",
-                            Week = 1,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Day = "Monday",
-                            Duration = 25,
-                            ImagePath = "images/fullbodyblast.jpg",
-                            Title = "Full-Body Blast",
-                            Week = 2,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Day = "Tuesday",
-                            Duration = 25,
-                            ImagePath = "images/coreburn.jpg",
-                            Title = "Core Focus Burn",
-                            Week = 2,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Day = "Monday",
-                            Duration = 30,
-                            ImagePath = "images/powercore.jpg",
-                            Title = "Power Core",
-                            Week = 3,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Day = "Tuesday",
-                            Duration = 20,
-                            ImagePath = "images/mobility.jpg",
-                            Title = "Light Flow & Mobility",
-                            Week = 3,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Day = "Monday",
-                            Duration = 40,
-                            ImagePath = "images/strength.jpg",
-                            Title = "Strength Circuit",
-                            Week = 4,
-                            WorkoutPlanId = 1
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Day = "Tuesday",
-                            Duration = 30,
-                            ImagePath = "images/agility.jpg",
-                            Title = "Agility",
-                            Week = 4,
                             WorkoutPlanId = 1
                         });
                 });

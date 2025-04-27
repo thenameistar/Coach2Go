@@ -24,7 +24,7 @@
         <MudButton 
             Variant="@(NavigationManager.Uri.Contains("/plan") ? Variant.Filled : Variant.Outlined)"
             Color="Color.Primary"
-            @onclick="@(() => NavigationManager.NavigateTo("/plan"))"
+            @onclick="@(() => NavigationManager.NavigateTo("/plan/1"))"
             Class="rounded-lg px-4"
             Style="min-width: 100px;">
             Plan
@@ -83,7 +83,7 @@
     </MudPaper>
     <MudText Typo="Typo.h6" Class="px-4 mt-4 mb-2" Style="color: white;">Active Recovery</MudText>
     <MudPaper Class="recovery-card mx-4 mb-6" @onclick="@(() => NavigationManager.NavigateTo("/workout"))" Style="cursor: pointer;">
-      <MudImage Src="images/yoga.jpg" Alt="Active Recovery" Class="recovery-img" />
+      <MudImage Src="images/activerecovery1.jpg" Alt="Active Recovery" Class="recovery-img" />
     </MudPaper>
 
 </MudContainer>
