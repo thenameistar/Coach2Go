@@ -1,33 +1,62 @@
 @page "/dailyworkout"
 @using MudBlazor
+@using Coach2Go.Shared.Dtos
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@inject IDialogService DialogService
+@using Coach2Go.Pages.Dialogs
+
 
 <!-- Top bar -->
 <MudPaper Class="top-bar" Elevation="0" Style="width: 100%; padding-top: 1rem;">
     <MudGrid Class="px-4" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-        <MudItem xs="6">
+        <!-- Left Side: Back + Pause -->
+        <MudItem xs="4" Class="d-flex align-items-center gap-2">
             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                            Color="Color.Primary"
                            Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
                            OnClick="NavigateBackToDashboard" />
+
+            @if (isWorkoutStarted)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Pause"
+                               Color="Color.Primary"
+                               Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
+                               OnClick="@PauseTimer" />
+            }
         </MudItem>
-        <MudItem xs="6" Class="d-flex justify-end">
-            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
-                <MudIconButton Icon="@Icons.Material.Filled.Timer"
-                               Color="Color.Primary"
-                               Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;" />
-                <MudIconButton Icon="@Icons.Material.Filled.Bookmark"
-                               Color="Color.Primary"
-                               Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;" />
-            </MudStack>
+
+        <!-- Center: Timer Text -->
+        <MudItem xs="4" Class="d-flex justify-center">
+            @if (isWorkoutStarted)
+            {
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="text-white">
+                    @($"{minutes:D2}:{seconds:D2}")
+                </MudText>
+            }
+        </MudItem>
+
+        <!-- Right Side: Timer Button + Bookmark Button -->
+        <MudItem xs="4" Class="d-flex justify-end gap-2">
+            <MudIconButton Icon="@Icons.Material.Filled.Timer"
+                           Color="Color.Primary"
+                           Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
+                           OnClick="@ResetTimer" />
+
+            <MudIconButton Icon="@Icons.Material.Filled.Bookmark"
+                           Color="Color.Primary"
+                           Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;" />
         </MudItem>
     </MudGrid>
 </MudPaper>
 
-<MudText Typo="Typo.h4" Align="Align.Center" Class="mt-2 mb-2">Full-Body Workout</MudText>
-<MudImage Src="images/workout1.jpg" Alt="Workout Image" Class="mb-3" Style="width: 100%; border-radius: 0;" />
+<!-- Title and Image -->
+<MudText Typo="Typo.h4" Align="Align.Center" Class="mt-2 mb-2">
+    @(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].Title : "Loading...")
+</MudText>
+<MudImage Src="@(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].ImagePath : "images/workout1.jpg")" />
 
+<!-- Workout Info -->
 <MudPaper Class="info-box" Elevation="0">
     <MudGrid>
         <MudItem xs="6"><b>Target Muscles:</b></MudItem><MudItem xs="6">Chest, Glutes, Core</MudItem>
@@ -37,101 +66,174 @@
     </MudGrid>
 </MudPaper>
 
-@if (exercises.Length > 0)
+<!-- Exercises Section -->
+@if (isLoading)
 {
-    @for (int i = 0; i < exercises.Length; i++)
+    <MudText Color="Color.Info" Align="Align.Center" Class="mt-4">
+        Loading exercises...
+    </MudText>
+}
+else if (exercises?.Length > 0 && exerciseCompleted?.Length == exercises.Length)
+{
+    @foreach (var (exercise, index) in exercises.Select((e, i) => (e, i)))
     {
+        var completed = exerciseCompleted[index];
+
         <MudGrid Class="mt-2 px-4" AlignItems="AlignItems.Center">
             <MudItem xs="2">
                 <MudPaper Class="icon-box">
-                    <MudImage Src="@exercises[i].Icon" Alt="@exercises[i].Name" Width="32" />
+                    <MudImage Src="@exercise.Icon" Alt="@exercise.Name" Width="32" />
                 </MudPaper>
             </MudItem>
 
             <MudItem xs="8">
-                <MudText Typo="Typo.subtitle1" Class="text-white">@exercises[i].Name</MudText>
-                <MudText Typo="Typo.caption" Class="text-white">@exercises[i].Details</MudText>
+                <MudText Typo="Typo.subtitle1" Class="text-white">@exercise.Name</MudText>
+                <MudText Typo="Typo.caption" Class="text-white">@exercise.Details</MudText>
             </MudItem>
 
             @if (isWorkoutStarted)
             {
                 <MudItem xs="2" Class="d-flex justify-end">
-                    <MudCheckBox T="bool" @bind-Checked="exerciseCompleted[i]" Color="Color.Primary" />
+                    <MudCheckBox T="bool" Checked="@completed"
+                                 @onchange="e => exerciseCompleted[index] = (bool?)e.Value ?? false"
+                                 Color="Color.Primary" />
                 </MudItem>
             }
         </MudGrid>
     }
+}
+else
+{
+    <MudText Color="Color.Warning" Align="Align.Center" Class="mt-4">
+        No exercises found or something went wrong.
+    </MudText>
 }
 
 <!-- Floating Start/End Button -->
 <div style="position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 999;">
     @if (!isWorkoutStarted)
     {
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="rounded-full px-6 py-2" OnClick="@(() => isWorkoutStarted = true)">
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Class="rounded-full px-6 py-2" OnClick="@StartWorkout">
             Start Workout
         </MudButton>
     }
     else
     {
-        <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="rounded-full px-6 py-2" OnClick="@(() => isWorkoutStarted = false)">
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" Class="rounded-full px-6 py-2" OnClick="@EndWorkout">
             End Workout
         </MudButton>
     }
 </div>
 
 @code {
-    private WorkoutPlan? workoutPlan;
+    private WorkoutPlanDto? workoutPlan;
     private (string Icon, string Name, string Details)[] exercises = Array.Empty<(string, string, string)>();
     private bool[] exerciseCompleted = Array.Empty<bool>();
     private bool isWorkoutStarted = false;
+    private bool isLoading = true;
+
+    // timer variables
+    private int minutes = 0; // ← start from 00
+    private int seconds = 0;
+    private bool isRunning = false;
+    private System.Timers.Timer? timer;
 
     protected override async Task OnInitializedAsync()
     {
-        workoutPlan = await Http.GetFromJsonAsync<WorkoutPlan>("api/workout/daily");
-
-        if (workoutPlan?.Sessions != null && workoutPlan.Sessions.Count > 0)
+        try
         {
-            exercises = workoutPlan.Sessions[0].Exercises
-                .Select(e => (e.ImagePath, e.Name, e.Details)).ToArray();
+            workoutPlan = await Http.GetFromJsonAsync<WorkoutPlanDto>("api/workout/daily");
 
-            exerciseCompleted = new bool[exercises.Length];
+            if (workoutPlan?.Sessions?.Count > 0)
+            {
+                var session = workoutPlan.Sessions[0];
+
+                if (session.Exercises != null && session.Exercises.Count > 0)
+                {
+                    exercises = session.Exercises
+                        .Select(e => (Icon: e.ImagePath, Name: e.Name, Details: e.Details))
+                        .ToArray();
+
+                    exerciseCompleted = new bool[exercises.Length];
+                }
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading exercises: " + ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void StartWorkout()
+    {
+        isWorkoutStarted = true;
+        StartTimer();
+    }
+
+    private async void EndWorkout()
+    {
+        isWorkoutStarted = false;
+        ResetTimer();
+        var parameters = new DialogParameters
+        {
+            { "ElapsedTime", $"{minutes:D2}:{seconds:D2}" }
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small };
+        await DialogService.ShowAsync<WorkoutCompleteDialog>("Workout Complete!", parameters, options);
+    }
+
+    private void StartTimer()
+    {
+        if (timer == null)
+        {
+            timer = new System.Timers.Timer(1000); // 1 second
+            timer.Elapsed += OnTimerElapsed;
+        }
+        isRunning = true;
+        timer.Start();
+    }
+
+    private void PauseTimer()
+    {
+        isRunning = false;
+        timer?.Stop();
+    }
+
+    private void ResetTimer()
+    {
+        PauseTimer();
+        minutes = 0;
+        seconds = 0;
+        StateHasChanged();
+    }
+
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (!isRunning) return;
+
+        seconds++;
+        if (seconds >= 60)
+        {
+            seconds = 0;
+            minutes++;
+        }
+
+        InvokeAsync(StateHasChanged); // refresh UI
     }
 
     private void NavigateBackToDashboard()
     {
         NavigationManager.NavigateTo("/");
     }
-
-    // your data models
-    public class WorkoutPlan
-    {
-        public int Id { get; set; }
-        public string Goal { get; set; } = "";
-        public string Type { get; set; } = "";
-        public string Experience { get; set; } = "";
-        public int Duration { get; set; }
-        public string Intensity { get; set; } = "";
-        public List<WorkoutSession> Sessions { get; set; } = new();
-    }
-
-    public class WorkoutSession
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = "";
-        public List<Exercise> Exercises { get; set; } = new();
-    }
-
-    public class Exercise
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Details { get; set; } = "";
-        public string ImagePath { get; set; } = "";
-    }
 }
 
 <style scoped>
+    
 .info-box {
     background: linear-gradient(135deg, #a24bdc, #c994f8);
     padding: 1rem;

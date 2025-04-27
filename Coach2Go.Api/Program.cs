@@ -1,38 +1,49 @@
 using Coach2Go.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add PostgreSQL connection
+// PostgreSQL connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Enable CORS so Blazor Client (WASM) can access the API
+// Enable CORS for frontend access
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowClient", policy =>
     {
-        policy.WithOrigins("http://localhost:5136", "https://localhost:5136") 
+        policy.WithOrigins("http://localhost:5204")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-builder.Services.AddControllers(); // add controller support
+// Register services
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+var app = builder.Build(); // ✅ Only ONE builder.Build()
 
-app.UseCors(); // enable CORS
-app.UseHttpsRedirection();
-
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.MapControllers(); // this enables /api/whatever endpoints
+app.UseHttpsRedirection();
+app.UseCors("AllowClient");
+app.UseAuthorization();
 
+app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated(); // This triggers HasData seeding if the DB is empty
+}
 app.Run();
