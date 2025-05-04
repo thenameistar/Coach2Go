@@ -1,0 +1,101 @@
+@page "/onboarding-step1"
+@using Coach2Go.Shared
+@using MudBlazor
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+
+<MudPaper Class="onboarding-container">
+    <!-- Skip Button -->
+    <div class="skip-button">
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@Skip">Skip</MudButton>
+    </div>
+
+    <!-- Title -->
+    <MudText Typo="Typo.h5" Class="onboarding-title">What's your goal?</MudText>
+
+    <!-- Option Buttons -->
+    <div class="onboarding-options">
+        @foreach (var option in goals)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="@(selectedGoal == option ? Color.Secondary : Color.Primary)"
+                       Class="onboarding-button"
+                       OnClick="@(() => SelectGoal(option))">
+                @option
+            </MudButton>
+        }
+    </div>
+
+    <!-- Next Button -->
+    <div class="onboarding-footer">
+        <MudButton Variant="Variant.Outlined"
+           Color="Color.Secondary"
+           Class="onboarding-button"
+           OnClick="NextStep">
+           Next
+        </MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback OnNext { get; set; }
+
+    private string? selectedGoal;
+    private List<string> goals = new() { "Lose Weight", "Build Strength", "General Fitness", "Build Muscle" };
+
+    private async Task NextStep()
+    {
+        await OnNext.InvokeAsync();
+    }
+
+    private void Skip()
+    {
+        Navigation.NavigateTo("/dashboard", true);
+    }
+
+    private void SelectGoal(string goal)
+    {
+        selectedGoal = goal;
+        Console.WriteLine($"Selected goal: {goal}");
+    }
+}
+<style>
+.onboarding-container {
+    background-color: #000;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
+}
+
+.onboarding-header,
+.onboarding-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.onboarding-title {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.onboarding-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.onboarding-button {
+    width: 80%;
+    max-width: 300px;
+    border-radius: 25px;
+}
+.skip-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+</style>

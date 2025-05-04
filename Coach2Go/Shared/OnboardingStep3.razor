@@ -1,0 +1,87 @@
+@page "/onboarding-step3"
+@using Coach2Go.Shared
+@using MudBlazor
+@inject NavigationManager Navigation
+
+<MudPaper Class="onboarding-container">
+    <div class="onboarding-header">
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@Skip">Skip</MudButton>
+    </div>
+
+    <MudText Typo="Typo.h5" Class="onboarding-title">Where do you train?</MudText>
+
+    <div class="onboarding-options">
+        @foreach (var option in trainingLocations)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="@(selectedLocation == option ? Color.Secondary : Color.Primary)"
+                       Class="onboarding-button"
+                       OnClick="@(() => SelectLocation(option))">
+                @option
+            </MudButton>
+        }
+    </div>
+
+    <div class="onboarding-footer">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback OnNext { get; set; }
+
+    private string? selectedLocation;
+    private readonly string[] trainingLocations = { "Home", "Gym", "Bodyweight" };
+
+    private async Task NextStep()
+    {
+        Console.WriteLine($"Selected location: {selectedLocation}");
+        await OnNext.InvokeAsync();
+    }
+
+    private void Skip()
+    {
+        Navigation.NavigateTo("/dashboard", true);
+    }
+
+    void SelectLocation(string location)
+    {
+        selectedLocation = location;
+    }
+}
+<style>
+.onboarding-container {
+    background-color: #000;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
+}
+
+.onboarding-header,
+.onboarding-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.onboarding-title {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.onboarding-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.onboarding-button {
+    width: 80%;
+    max-width: 300px;
+    border-radius: 25px;
+}
+</style>
+

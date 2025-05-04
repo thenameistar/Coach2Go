@@ -1,0 +1,86 @@
+@page "/onboarding-step2"
+@using Coach2Go.Shared
+@using MudBlazor
+@inject NavigationManager Navigation
+
+<MudPaper Class="onboarding-container">
+    <div class="onboarding-header">
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@Skip">Skip</MudButton>
+    </div>
+
+    <MudText Typo="Typo.h5" Class="onboarding-title">What experience do you have?</MudText>
+
+    <div class="onboarding-options">
+        @foreach (var level in experienceLevels)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="@(selectedExperience == level ? Color.Secondary : Color.Primary)"
+                       Class="onboarding-button"
+                       OnClick="@(() => SelectExperience(level))">
+                @level
+            </MudButton>
+        }
+    </div>
+
+    <div class="onboarding-footer">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback OnNext { get; set; }
+
+    private string? selectedExperience;
+    private readonly string[] experienceLevels = { "Beginner", "Intermediate", "Advanced" };
+
+    private async Task NextStep()
+    {
+        Console.WriteLine($"Selected: {selectedExperience}");
+        await OnNext.InvokeAsync();
+    }
+
+    private void Skip()
+    {
+        Navigation.NavigateTo("/dashboard", true);
+    }
+
+    void SelectExperience(string level)
+    {
+        selectedExperience = level;
+    }
+}
+<style>
+.onboarding-container {
+    background-color: #000;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
+}
+
+.onboarding-header,
+.onboarding-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.onboarding-title {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.onboarding-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.onboarding-button {
+    width: 80%;
+    max-width: 300px;
+    border-radius: 25px;
+}
+</style>
