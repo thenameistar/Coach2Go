@@ -1,18 +1,18 @@
 @inherits LayoutComponentBase
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="onboarding-layout pa-6 mt-6 mx-auto">
+<div class="onboarding-layout">
     @Body
-</MudContainer>
+</div>
 
 <style>
 .onboarding-layout {
     background-color: #000;
     color: white;
-    min-height: 100vh;
-    padding: 2rem;
+    width: 100vw;
+    height: 100vh;
     display: flex;
-    justify-content: center;
-    align-items: center;
     flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem;
 }
 </style>
