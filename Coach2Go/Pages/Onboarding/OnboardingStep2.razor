@@ -1,4 +1,4 @@
-@using Coach2Go.Shared
+@namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
 @inject NavigationManager Navigation
 
@@ -7,16 +7,16 @@
         <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@Skip">Skip</MudButton>
     </div>
 
-    <MudText Typo="Typo.h5" Class="onboarding-title">Where do you train?</MudText>
+    <MudText Typo="Typo.h5" Class="onboarding-title">What experience do you have?</MudText>
 
     <div class="onboarding-options">
-        @foreach (var option in trainingLocations)
+        @foreach (var level in experienceLevels)
         {
             <MudButton Variant="Variant.Filled"
-                       Color="@(selectedLocation == option ? Color.Secondary : Color.Primary)"
+                       Color="@(selectedExperience == level ? Color.Secondary : Color.Primary)"
                        Class="onboarding-button"
-                       OnClick="@(() => SelectLocation(option))">
-                @option
+                       OnClick="@(() => SelectExperience(level))">
+                @level
             </MudButton>
         }
     </div>
@@ -29,12 +29,12 @@
 @code {
     [Parameter] public EventCallback OnNext { get; set; }
 
-    private string? selectedLocation;
-    private readonly string[] trainingLocations = { "Home", "Gym", "Bodyweight" };
+    private string? selectedExperience;
+    private readonly string[] experienceLevels = { "Beginner", "Intermediate", "Advanced" };
 
     private async Task NextStep()
     {
-        Console.WriteLine($"Selected location: {selectedLocation}");
+        Console.WriteLine($"Selected: {selectedExperience}");
         await OnNext.InvokeAsync();
     }
 
@@ -43,12 +43,12 @@
         Navigation.NavigateTo("/dashboard", true);
     }
 
-    void SelectLocation(string location)
+    void SelectExperience(string level)
     {
-        selectedLocation = location;
+        selectedExperience = level;
     }
 }
-<style>
+<style scoped>
 .onboarding-container {
     background-color: #000;
     color: white;
@@ -83,4 +83,3 @@
     border-radius: 25px;
 }
 </style>
-

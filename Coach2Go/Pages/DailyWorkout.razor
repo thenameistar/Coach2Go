@@ -133,7 +133,7 @@ else
     private bool isLoading = true;
 
     // timer variables
-    private int minutes = 0; // ← start from 00
+    private int minutes = 0; 
     private int seconds = 0;
     private bool isRunning = false;
     private System.Timers.Timer? timer;
@@ -142,7 +142,8 @@ else
     {
         try
         {
-            workoutPlan = await Http.GetFromJsonAsync<WorkoutPlanDto>("api/workout/daily");
+            int userId = 1; // TODO: get this from local storage or authentication state
+            workoutPlan = await Http.GetFromJsonAsync<WorkoutPlanDto>($"api/workout/daily/{userId}");
 
             if (workoutPlan?.Sessions?.Count > 0)
             {

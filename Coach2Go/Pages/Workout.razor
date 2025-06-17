@@ -1,1 +1,86 @@
 @page "/workout"
+@using MudBlazor
+@using Coach2Go.Shared.Dtos
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="px-4 py-2 text-white">
+
+    <!-- Top Bar -->
+    <MudGrid AlignItems="Center" Justify="Justify.SpaceBetween">
+        <MudItem>
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/dashboard"))" />
+        </MudItem>
+        <MudItem>
+            <MudIconButton Icon="@Icons.Material.Filled.Bookmark" Color="Color.Primary" />
+        </MudItem>
+    </MudGrid>
+
+    <!-- Filters -->
+    <MudPaper Class="d-flex justify-between mt-2 px-2 py-1 rounded" Elevation="2" Style="background: linear-gradient(90deg, #9C27B0, #E040FB);">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mx-1 rounded-pill">Type</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mx-1 rounded-pill">Time</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mx-1 rounded-pill">Goal</MudButton>
+    </MudPaper>
+
+    <!-- Workout Sections -->
+    @WorkoutSection("Recommended For You", recommended)
+    @WorkoutSection("Popular", popular)
+    @WorkoutSection("Recovery and Flow", recovery)
+
+</MudContainer>
+
+@code {
+    private List<WorkoutSessionDto> recommended = new();
+    private List<WorkoutSessionDto> popular = new();
+    private List<WorkoutSessionDto> recovery = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        recommended = await Http.GetFromJsonAsync<List<WorkoutSessionDto>>("api/workout/sessions-by-category/Recommended") ?? new();
+        popular = await Http.GetFromJsonAsync<List<WorkoutSessionDto>>("api/workout/sessions-by-category/Popular") ?? new();
+        recovery = await Http.GetFromJsonAsync<List<WorkoutSessionDto>>("api/workout/sessions-by-category/Recovery") ?? new();
+    }
+
+    private RenderFragment WorkoutSection(string title, List<WorkoutSessionDto> sessions) => __builder =>
+    {
+        __builder.OpenElement(0, "div");
+        __builder.AddMarkupContent(1, $"<h3 class=\"mt-4\">{title}</h3>");
+        __builder.OpenComponent<MudGrid>(2);
+
+        int seq = 3;
+        foreach (var session in sessions)
+        {
+            __builder.OpenComponent<MudItem>(seq++);
+            __builder.AddAttribute(seq++, "xs", 4);
+            __builder.AddAttribute(seq++, "ChildContent", (RenderFragment)((b) =>
+            {
+                b.OpenComponent<MudPaper>(seq++);
+                b.AddAttribute(seq++, "Class", "p-1 text-center");
+                b.AddAttribute(seq++, "Elevation", 1);
+                b.AddAttribute(seq++, "ChildContent", (RenderFragment)((b2) =>
+                {
+                    b2.OpenComponent<MudImage>(seq++);
+                    b2.AddAttribute(seq++, "Src", session.ImagePath);
+                    b2.AddAttribute(seq++, "Style", "border-radius: 12px; width: 100%; height: 100px; object-fit: cover;");
+                    b2.CloseComponent();
+
+                    b2.OpenComponent<MudText>(seq++);
+                    b2.AddAttribute(seq++, "Typo", Typo.body2);
+                    b2.AddAttribute(seq++, "ChildContent", (RenderFragment)((b3) => b3.AddContent(seq++, $"{session.Duration} min")));
+                    b2.CloseComponent();
+
+                    b2.OpenComponent<MudText>(seq++);
+                    b2.AddAttribute(seq++, "Typo", Typo.caption);
+                    b2.AddAttribute(seq++, "ChildContent", (RenderFragment)((b3) => b3.AddContent(seq++, session.Title)));
+                    b2.CloseComponent();
+                }));
+                b.CloseComponent(); 
+            }));
+            __builder.CloseComponent(); 
+        }
+
+        __builder.CloseComponent(); 
+        __builder.CloseElement();   
+    };
+}

@@ -16,25 +16,29 @@ namespace Coach2Go.Api.Controllers
             _context = context;
         }
 
-        [HttpGet("daily")]
-        public async Task<IActionResult> GetDailyWorkout()
+        [HttpGet("daily/{userId}")]
+        public async Task<IActionResult> GetDailyWorkout(int userId)
         {
-            var workout = await _context.WorkoutPlans
-                .Include(p => p.Sessions)
-                    .ThenInclude(s => s.Exercises)
-                .FirstOrDefaultAsync(w => w.Id == 1);
+            var user = await _context.Users
+                .Include(u => u.WorkoutPlan)
+                    .ThenInclude(p => p!.Sessions)
+                        .ThenInclude(s => s.Exercises)
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
-            if (workout == null) return NotFound();
+            if (user == null || user.WorkoutPlan == null)
+                return NotFound("User or workout plan not found");
+
+            var workoutPlan = user.WorkoutPlan;
 
             var mappedDto = new WorkoutPlanDto
             {
-                Id = workout.Id,
-                Goal = workout.Goal,
-                Type = workout.Type,
-                Experience = workout.Experience,
-                Duration = workout.Duration,
-                Intensity = workout.Intensity,
-                Sessions = workout.Sessions.Select(s => new WorkoutSessionDto
+                Id = workoutPlan.Id,
+                Goal = workoutPlan.Goal,
+                Type = workoutPlan.Type,
+                Experience = workoutPlan.Experience,
+                Duration = workoutPlan.Duration,
+                Intensity = workoutPlan.Intensity,
+                Sessions = workoutPlan.Sessions.Select(s => new WorkoutSessionDto
                 {
                     Id = s.Id,
                     Title = s.Title,
@@ -45,7 +49,6 @@ namespace Coach2Go.Api.Controllers
                         Name = e.Name,
                         Details = e.Details,
                         ImagePath = e.ImagePath
-                        
                     }).ToList()
                 }).ToList()
             };
@@ -58,7 +61,7 @@ namespace Coach2Go.Api.Controllers
             var plan = await _context.WorkoutPlans
             .Include(p => p.Sessions)
             .FirstOrDefaultAsync(p => p.Id == id);
-            
+
             if (plan == null) return NotFound();
             var dto = new WorkoutPlanDto
             {
@@ -80,6 +83,61 @@ namespace Coach2Go.Api.Controllers
             };
 
             return Ok(dto);
+        }
+        [HttpGet("sessions-by-category/{category}")]
+        public async Task<IActionResult> GetSessionsByCategory(string category)
+        {
+            var sessions = await _context.WorkoutSessions
+            .Include(s => s.Exercises)
+            .Include(s => s.WorkoutPlan)
+            .Where(s => s.Category == category)
+            .Select(s => new WorkoutSessionDto
+            {
+                Id = s.Id,
+                Title = s.Title,
+                Week = s.Week,
+                Day = s.Day,
+                Category = s.Category,
+                ImagePath = s.ImagePath,
+                Duration = s.Duration,
+                Exercises = s.Exercises.Select(e => new ExerciseDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Details = e.Details,
+                    ImagePath = e.ImagePath
+                }).ToList()
+            }).ToListAsync();
+
+            return Ok(sessions);
+        }
+        // Add this after your last GET method inside WorkoutController
+
+        [HttpPost("assign-plan")]
+        public async Task<IActionResult> AssignPlan([FromBody] UserOnboardingDto dto)
+        {
+            var user = await _context.Users.FindAsync(dto.UserId);
+            if (user == null) return NotFound("User not found");
+
+            // Save onboarding answers to user
+            user.Goal = dto.Goal;
+            user.Type = dto.Type;
+            user.Experience = dto.Experience;
+
+            // Find matching workout plan
+            var matchingPlan = await _context.WorkoutPlans.FirstOrDefaultAsync(p =>
+                p.Goal == dto.Goal &&
+                p.Type == dto.Type &&
+                p.Experience == dto.Experience
+            );
+
+            if (matchingPlan == null) return NotFound("No matching plan");
+
+            user.WorkoutPlanId =matchingPlan.Id; // or set user.WorkoutPlanId if you're using a single-plan logic
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Workout plan assigned", PlanId = matchingPlan.Id });
         }
     }
 
