@@ -1,49 +1,41 @@
-@using Coach2Go.Shared
+@namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
-@using Microsoft.AspNetCore.Components
 @inject NavigationManager Navigation
 
 <MudPaper Class="onboarding-container">
-    <!-- Skip Button -->
-    <div class="skip-button">
+
+    <div class="onboarding-header">
         <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@Skip">Skip</MudButton>
     </div>
 
-    <!-- Title -->
-    <MudText Typo="Typo.h5" Class="onboarding-title">What's your goal?</MudText>
+    <MudText Typo="Typo.h5" Class="onboarding-title">Where do you train?</MudText>
 
-    <!-- Option Buttons -->
     <div class="onboarding-options">
-        @foreach (var option in goals)
+        @foreach (var option in trainingLocations)
         {
             <MudButton Variant="Variant.Filled"
-                       Color="@(selectedGoal == option ? Color.Secondary : Color.Primary)"
+                       Color="@(selectedLocation == option ? Color.Secondary : Color.Primary)"
                        Class="onboarding-button"
-                       OnClick="@(() => SelectGoal(option))">
+                       OnClick="@(() => SelectLocation(option))">
                 @option
             </MudButton>
         }
     </div>
 
-    <!-- Next Button -->
     <div class="onboarding-footer">
-        <MudButton Variant="Variant.Outlined"
-           Color="Color.Secondary"
-           Class="onboarding-button"
-           OnClick="NextStep">
-           Next
-        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
     </div>
 </MudPaper>
 
 @code {
     [Parameter] public EventCallback OnNext { get; set; }
 
-    private string? selectedGoal;
-    private List<string> goals = new() { "Lose Weight", "Build Strength", "General Fitness", "Build Muscle" };
+    private string? selectedLocation;
+    private readonly string[] trainingLocations = { "Home", "Gym", "Bodyweight" };
 
     private async Task NextStep()
     {
+        Console.WriteLine($"Selected location: {selectedLocation}");
         await OnNext.InvokeAsync();
     }
 
@@ -52,13 +44,12 @@
         Navigation.NavigateTo("/dashboard", true);
     }
 
-    private void SelectGoal(string goal)
+    void SelectLocation(string location)
     {
-        selectedGoal = goal;
-        Console.WriteLine($"Selected goal: {goal}");
+        selectedLocation = location;
     }
 }
-<style>
+<style scoped>
 .onboarding-container {
     background-color: #000;
     color: white;
@@ -92,9 +83,5 @@
     max-width: 300px;
     border-radius: 25px;
 }
-.skip-button {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-}
 </style>
+

@@ -13,10 +13,73 @@ namespace Coach2Go.Api.Data
         public DbSet<WorkoutPlan> WorkoutPlans { get; set; }
         public DbSet<WorkoutSession> WorkoutSessions { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    Username = "Ana",
+                    Email = "ana@test.com",
+                    Goal = "Lose Weight",
+                    Type = "Bodyweight",
+                    Experience = "Beginner",
+                    WorkoutPlanId = 1
+                },
+                new User
+                {
+                    Id = 2,
+                    Username = "Elijah",
+                    Email = "elijah@test.com",
+                    Goal = "Strength",
+                    Type = "Gym",
+                    Experience = "Intermediate",
+                    WorkoutPlanId = 2
+                },
+                new User
+                {
+                    Id = 3,
+                    Username = "Charlie",
+                    Email = "charlie@test.com",
+                    Goal = "General Fitness",
+                    Type = "Bodyweight",
+                    Experience = "Beginner",
+                    WorkoutPlanId = 3
+                },
+                new User
+                {
+                    Id = 4,
+                    Username = "Sasha",
+                    Email = "sasha@test.com",
+                    Goal = "Build Muscle",
+                    Type = "Gym",
+                    Experience = "Advanced",
+                    WorkoutPlanId = 4
+                },
+                new User
+                {
+                    Id = 5,
+                    Username = "Sham",
+                    Email = "sham@test.com",
+                    Goal = "Build Muscle",
+                    Type = "Gym",
+                    Experience = "Beginner",
+                    WorkoutPlanId = 5
+                },
+                new User
+                {
+                    Id = 6,
+                    Username = "Blessing",
+                    Email = "blessing@test.com",
+                    Goal = "Lose weight",
+                    Type = "Gym",
+                    Experience = "Beginner",
+                    WorkoutPlanId = 6
+                }
+                );
 
             modelBuilder.Entity<WorkoutPlan>().HasData(
                 new WorkoutPlan
@@ -26,6 +89,51 @@ namespace Coach2Go.Api.Data
                     Type = "Bodyweight",
                     Experience = "Beginner",
                     Duration = 20,
+                    Intensity = "Low"
+                },
+                new WorkoutPlan
+                {
+                    Id = 2,
+                    Goal = "Strength",
+                    Type = "Gym",
+                    Experience = "Intermediate",
+                    Duration = 40,
+                    Intensity = "Medium"
+                },
+                new WorkoutPlan
+                {
+                    Id = 3,
+                    Goal = "General Fitness",
+                    Type = "Bodyweight",
+                    Experience = "Beginner",
+                    Duration = 30,
+                    Intensity = "Low"
+                },
+                new WorkoutPlan
+                {
+                    Id = 4,
+                    Goal = "Build Muscle",
+                    Type = "Gym",
+                    Experience = "Advanced",
+                    Duration = 50,
+                    Intensity = "High"
+                },
+                new WorkoutPlan
+                {
+                    Id = 5,
+                    Goal = "Build Muscle",
+                    Type = "Gym",
+                    Experience = "Beginner",
+                    Duration = 35,
+                    Intensity = "Medium"
+                },
+                new WorkoutPlan
+                {
+                    Id = 6,
+                    Goal = "Lose Weight",
+                    Type = "Gym",
+                    Experience = "Beginner",
+                    Duration = 30,
                     Intensity = "Low"
                 }
             );
@@ -39,7 +147,8 @@ namespace Coach2Go.Api.Data
                     Day = "Monday",
                     WorkoutPlanId = 1,
                     ImagePath = "images/workout1.jpg",
-                    Duration = 30
+                    Duration = 30,
+                    Category = "Recommended"
                 },
                 new WorkoutSession
                 {
@@ -49,7 +158,8 @@ namespace Coach2Go.Api.Data
                     Day = "Tuesday",
                     WorkoutPlanId = 1,
                     ImagePath = "images/cardiocore.jpg",
-                    Duration = 30
+                    Duration = 30,
+                    Category = "Popular"
                 },
                 new WorkoutSession
                 {
@@ -59,7 +169,8 @@ namespace Coach2Go.Api.Data
                     Day = "Wednesday",
                     WorkoutPlanId = 1,
                     ImagePath = "images/activerecovery1.jpg",
-                    Duration = 20
+                    Duration = 20,
+                    Category = "Recovery"
                 },
                 new WorkoutSession
                 {
@@ -68,7 +179,7 @@ namespace Coach2Go.Api.Data
                     Week = 1,
                     Day = "Thursday",
                     WorkoutPlanId = 1,
-                    ImagePath = "images/lowerbody.jpg", 
+                    ImagePath = "images/lowerbody.jpg",
                     Duration = 25
                 },
                 new WorkoutSession
@@ -89,7 +200,7 @@ namespace Coach2Go.Api.Data
                     Day = "Saturday",
                     WorkoutPlanId = 1,
                     ImagePath = "images/yoga.jpg",
-                    Duration = 20 
+                    Duration = 20
                 },
                 new WorkoutSession
                 {
@@ -110,7 +221,7 @@ namespace Coach2Go.Api.Data
                     WorkoutPlanId = 1,
                     ImagePath = "images/coreburn.jpg",
                     Duration = 25
-                
+
                 },
                 new WorkoutSession
                 {
@@ -128,7 +239,7 @@ namespace Coach2Go.Api.Data
                     Title = "Light Flow & Mobility",
                     Week = 3,
                     Day = "Tuesday",
-                    WorkoutPlanId =1,
+                    WorkoutPlanId = 1,
                     ImagePath = "images/mobility.jpg",
                     Duration = 20
                 },
@@ -172,29 +283,29 @@ namespace Coach2Go.Api.Data
                     WorkoutSessionId = 1
                 },
                  new Exercise
-                {
-                    Id = 3,
-                    Name = "Push Ups",
-                    Details = "10 reps",
-                    ImagePath = "images/pushup.png",
-                    WorkoutSessionId = 1
-                },
+                 {
+                     Id = 3,
+                     Name = "Push Ups",
+                     Details = "10 reps",
+                     ImagePath = "images/pushup.png",
+                     WorkoutSessionId = 1
+                 },
                  new Exercise
-                {
-                    Id = 4,
-                    Name = "Glute Bridges",
-                    Details = "15 reps",
-                    ImagePath = "images/glutebridges.png",
-                    WorkoutSessionId = 1
-                },
+                 {
+                     Id = 4,
+                     Name = "Glute Bridges",
+                     Details = "15 reps",
+                     ImagePath = "images/glutebridges.png",
+                     WorkoutSessionId = 1
+                 },
                  new Exercise
-                {
-                    Id = 5,
-                    Name = "Plank",
-                    Details = "1 min",
-                    ImagePath = "images/plank.png",
-                    WorkoutSessionId = 1
-                }
+                 {
+                     Id = 5,
+                     Name = "Plank",
+                     Details = "1 min",
+                     ImagePath = "images/plank.png",
+                     WorkoutSessionId = 1
+                 }
             );
         }
     }

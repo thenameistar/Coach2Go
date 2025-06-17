@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 namespace Coach2Go.Shared.Dtos
 {
     public class WorkoutPlanDto
@@ -17,9 +18,10 @@ namespace Coach2Go.Shared.Dtos
         public string Title { get; set; } = string.Empty;
         public string ImagePath { get; set; } = string.Empty;
         public int Duration { get; set; } 
+        public string Category { get; set; } = string.Empty;
         public string Day { get; set; } = string.Empty; 
         public int Week { get; set; }
-        public List<ExerciseDto> Exercises { get; set; } = new(); // ✅
+        public List<ExerciseDto> Exercises { get; set; } = new();
     }
 
     public class ExerciseDto
