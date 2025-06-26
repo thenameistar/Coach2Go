@@ -1,5 +1,20 @@
 ﻿@using MudBlazor
-@using Coach2Go.Shared
+@using Coach2Go.Shared.Dtos
+@inject AuthService AuthService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await localStorage.GetItemAsync<string>("authToken");
+        var user = await localStorage.GetItemAsync<UserDto>("currentUser");
+
+        if (!string.IsNullOrWhiteSpace(token) && user is not null)
+        {
+            await AuthService.SetAuthToken(token, user);
+        }
+    }
+}
 
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">

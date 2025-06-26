@@ -1,0 +1,115 @@
+@page "/login"
+@using System.Net.Http.Headers
+@using Blazored.LocalStorage
+@using Coach2Go.Shared.Dtos
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+@inject AuthService AuthService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="d-flex flex-column justify-center align-center" Style="height: 100vh;">
+    
+    <MudImage Src="images/logo.png" Alt="Coach2Go Logo" Width="120" Class="mb-6" />
+
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-2" Style="color: white;">
+        Welcome to Coach2Go
+    </MudText>
+
+    <MudText Typo="Typo.body2" Align="Align.Center" Class="mb-4" Style="color: lightgray;">
+        Your fitness journey starts here.
+    </MudText>
+
+    <!-- Email Field -->
+    <MudTextField @bind-Value="email" Label="Email" Variant="Variant.Filled" Class="mb-2" />
+
+    <!-- Password Field -->
+    <MudTextField @bind-Value="password" Label="Password" Variant="Variant.Filled" Class="mb-4" InputType="InputType.Password" />
+
+    <!-- Login Button -->
+    <MudButton OnClick="HandleLogin" Variant="Variant.Filled" Color="Color.Primary" Class="mb-2" FullWidth="true">
+        Login
+    </MudButton>
+
+    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-4" Style="color: gray;">
+        Don't have an account?
+        <MudLink Href="/register">Register</MudLink>
+    </MudText>
+
+    <!-- OR Divider -->
+    <MudText Typo="Typo.caption" Align="Align.Center" Class="mb-2" Style="color: gray;">
+        OR
+    </MudText>
+
+    <!-- Google Sign-In Button -->
+    <MudPaper Class="d-flex justify-center align-center mb-2" Style="padding: 0.5rem 1.2rem; background-color: white; border-radius: 12px; cursor: pointer;" @onclick="StartGoogleLogin">
+        <img src="images/google.png" alt="Google Icon" width="20" height="20" class="me-2" />
+        <MudText Typo="Typo.button" Style="color: black;">Continue with Google</MudText>
+    </MudPaper>
+
+    <!-- Error Message -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <MudText Typo="Typo.caption" Color="Color.Error">@errorMessage</MudText>
+    }
+
+    <MudText Typo="Typo.caption" Align="Align.Center" Style="color: gray;">
+        By continuing, you agree to our terms and privacy policy.
+    </MudText>
+
+</MudContainer>
+
+@code {
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
+
+    private LoginRequest loginData => new()
+    {
+        Email = email,
+        Password = password
+    };
+
+    private async Task HandleLogin()
+    {
+        errorMessage = string.Empty;
+
+        var response = await Http.PostAsJsonAsync("api/auth/login", loginData);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+
+            if (result is not null)
+            {
+                await AuthService.SetAuthToken(result.Token, result.User);
+
+                NavigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = "Login succeeded but response is empty.";
+            }
+        }
+        else
+        {
+            errorMessage = "Login failed. Check your email and password.";
+        }
+    }
+
+    private void StartGoogleLogin()
+    {
+        NavigationManager.NavigateTo("http://localhost:5136/api/auth/google", true);
+    }
+
+    public class LoginResult
+    {
+        public string Token { get; set; } = string.Empty;
+        public UserDto User { get; set; } = new();
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+}

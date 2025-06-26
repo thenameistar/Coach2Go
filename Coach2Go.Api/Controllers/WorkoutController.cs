@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Coach2Go.Api.Data;
@@ -7,6 +8,7 @@ namespace Coach2Go.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class WorkoutController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -55,14 +57,16 @@ namespace Coach2Go.Api.Controllers
 
             return Ok(mappedDto);
         }
+
         [HttpGet("plan/{id}")]
         public async Task<IActionResult> GetPlanById(int id)
         {
             var plan = await _context.WorkoutPlans
-            .Include(p => p.Sessions)
-            .FirstOrDefaultAsync(p => p.Id == id);
+                .Include(p => p.Sessions)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (plan == null) return NotFound();
+
             var dto = new WorkoutPlanDto
             {
                 Id = plan.Id,
@@ -84,34 +88,34 @@ namespace Coach2Go.Api.Controllers
 
             return Ok(dto);
         }
+
         [HttpGet("sessions-by-category/{category}")]
         public async Task<IActionResult> GetSessionsByCategory(string category)
         {
             var sessions = await _context.WorkoutSessions
-            .Include(s => s.Exercises)
-            .Include(s => s.WorkoutPlan)
-            .Where(s => s.Category == category)
-            .Select(s => new WorkoutSessionDto
-            {
-                Id = s.Id,
-                Title = s.Title,
-                Week = s.Week,
-                Day = s.Day,
-                Category = s.Category,
-                ImagePath = s.ImagePath,
-                Duration = s.Duration,
-                Exercises = s.Exercises.Select(e => new ExerciseDto
+                .Include(s => s.Exercises)
+                .Include(s => s.WorkoutPlan)
+                .Where(s => s.Category == category)
+                .Select(s => new WorkoutSessionDto
                 {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Details = e.Details,
-                    ImagePath = e.ImagePath
-                }).ToList()
-            }).ToListAsync();
+                    Id = s.Id,
+                    Title = s.Title,
+                    Week = s.Week,
+                    Day = s.Day,
+                    Category = s.Category,
+                    ImagePath = s.ImagePath,
+                    Duration = s.Duration,
+                    Exercises = s.Exercises.Select(e => new ExerciseDto
+                    {
+                        Id = e.Id,
+                        Name = e.Name,
+                        Details = e.Details,
+                        ImagePath = e.ImagePath
+                    }).ToList()
+                }).ToListAsync();
 
             return Ok(sessions);
         }
-        // Add this after your last GET method inside WorkoutController
 
         [HttpPost("assign-plan")]
         public async Task<IActionResult> AssignPlan([FromBody] UserOnboardingDto dto)
@@ -119,12 +123,10 @@ namespace Coach2Go.Api.Controllers
             var user = await _context.Users.FindAsync(dto.UserId);
             if (user == null) return NotFound("User not found");
 
-            // Save onboarding answers to user
             user.Goal = dto.Goal;
             user.Type = dto.Type;
             user.Experience = dto.Experience;
 
-            // Find matching workout plan
             var matchingPlan = await _context.WorkoutPlans.FirstOrDefaultAsync(p =>
                 p.Goal == dto.Goal &&
                 p.Type == dto.Type &&
@@ -133,12 +135,11 @@ namespace Coach2Go.Api.Controllers
 
             if (matchingPlan == null) return NotFound("No matching plan");
 
-            user.WorkoutPlanId =matchingPlan.Id; // or set user.WorkoutPlanId if you're using a single-plan logic
+            user.WorkoutPlanId = matchingPlan.Id;
 
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Workout plan assigned", PlanId = matchingPlan.Id });
         }
     }
-
 }

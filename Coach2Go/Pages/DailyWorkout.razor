@@ -54,7 +54,7 @@
 <MudText Typo="Typo.h4" Align="Align.Center" Class="mt-2 mb-2">
     @(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].Title : "Loading...")
 </MudText>
-<MudImage Src="@(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].ImagePath : "images/workout1.jpg")" />
+<MudImage Src="@(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].ImagePath : "images/default.jpg")" />
 
 <!-- Workout Info -->
 <MudPaper Class="info-box" Elevation="0">
@@ -142,7 +142,7 @@ else
     {
         try
         {
-            int userId = 1; // TODO: get this from local storage or authentication state
+            int userId = 2; 
             workoutPlan = await Http.GetFromJsonAsync<WorkoutPlanDto>($"api/workout/daily/{userId}");
 
             if (workoutPlan?.Sessions?.Count > 0)
@@ -192,7 +192,7 @@ else
     {
         if (timer == null)
         {
-            timer = new System.Timers.Timer(1000); // 1 second
+            timer = new System.Timers.Timer(1000); 
             timer.Elapsed += OnTimerElapsed;
         }
         isRunning = true;
@@ -224,7 +224,7 @@ else
             minutes++;
         }
 
-        InvokeAsync(StateHasChanged); // refresh UI
+        InvokeAsync(StateHasChanged); 
     }
 
     private void NavigateBackToDashboard()
