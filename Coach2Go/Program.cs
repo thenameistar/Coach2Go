@@ -9,7 +9,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("http://localhost:5136") // replace with your API base URL
+    BaseAddress = new Uri("http://localhost:5136") 
 });
 
 builder.Services.AddMudServices();
