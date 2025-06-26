@@ -8,6 +8,6 @@ namespace Coach2Go.Api.Models
 
         public string Email { get; set; } = default!;
 
-        public List<WorkoutPlan> Plans { get; set; } = new(); // ensures it's never null
+        public List<WorkoutPlan> Plans { get; set; } = new(); 
     }
 }
