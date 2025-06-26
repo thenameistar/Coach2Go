@@ -111,7 +111,6 @@ namespace Coach2Go.Api.Controllers
 
             return Ok(sessions);
         }
-        // Add this after your last GET method inside WorkoutController
 
         [HttpPost("assign-plan")]
         public async Task<IActionResult> AssignPlan([FromBody] UserOnboardingDto dto)
@@ -119,12 +118,10 @@ namespace Coach2Go.Api.Controllers
             var user = await _context.Users.FindAsync(dto.UserId);
             if (user == null) return NotFound("User not found");
 
-            // Save onboarding answers to user
             user.Goal = dto.Goal;
             user.Type = dto.Type;
             user.Experience = dto.Experience;
-
-            // Find matching workout plan
+            
             var matchingPlan = await _context.WorkoutPlans.FirstOrDefaultAsync(p =>
                 p.Goal == dto.Goal &&
                 p.Type == dto.Type &&
@@ -133,7 +130,7 @@ namespace Coach2Go.Api.Controllers
 
             if (matchingPlan == null) return NotFound("No matching plan");
 
-            user.WorkoutPlanId =matchingPlan.Id; // or set user.WorkoutPlanId if you're using a single-plan logic
+            user.WorkoutPlanId =matchingPlan.Id; 
 
             await _context.SaveChangesAsync();
 
