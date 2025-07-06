@@ -14,6 +14,7 @@ namespace Coach2Go.Api.Data
         public DbSet<WorkoutSession> WorkoutSessions { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<GymEquipment> GymEquipment { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -306,6 +307,14 @@ namespace Coach2Go.Api.Data
                      ImagePath = "images/plank.png",
                      WorkoutSessionId = 1
                  }
+            );
+            
+            modelBuilder.Entity<GymEquipment>().HasData(
+                new GymEquipment { Id = 1, GymName = "PureGym", EquipmentName = "Treadmill" },
+                new GymEquipment { Id = 2, GymName = "PureGym", EquipmentName = "Dumbbells" },
+                new GymEquipment { Id = 3, GymName = "PureGym", EquipmentName = "Rowing Machine" },
+                new GymEquipment { Id = 4, GymName = "AnytimeFitness", EquipmentName = "Elliptical" },
+                new GymEquipment { Id = 5, GymName = "AnytimeFitness", EquipmentName = "Cable Crossover" }
             );
         }
     }

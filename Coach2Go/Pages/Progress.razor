@@ -1,1 +1,88 @@
 ﻿@page "/progress"
+@using Coach2Go.Shared.Dtos
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="pa-4">
+
+    <!-- Header -->
+    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+        <MudAvatar Size="Size.Medium" Icon="@Icons.Material.Filled.Person" />
+        <MudText Typo="Typo.h5">My Progress</MudText>
+    </MudStack>
+
+    <!-- Weekly Workout Streak Card -->
+    <MudPaper Class="mt-4 pa-4" Elevation="4" Style="background: linear-gradient(to right, #9b59b6, #8e44ad); color: white;">
+        <MudText Typo="Typo.h6">Weekly Workout Streak</MudText>
+        <MudText Typo="Typo.body2">Work out 3 times this week to hit your goal!</MudText>
+
+        <MudProgressLinear Value="66" Color="Color.Primary" Class="my-2" />
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="color: white; border-color: white;">View History</MudButton>
+    </MudPaper>
+
+    <!-- Activity Chart -->
+    <MudPaper Class="mt-4 pa-4" Elevation="4" Style="background: linear-gradient(to right, #d5a3f0, #e0c3fc);">
+        <MudText Typo="Typo.h6">Activity</MudText>
+        <MudText Typo="Typo.caption">12 Mar - 18 Mar</MudText>
+
+        <MudChart ChartType="ChartType.Bar" Labels="@Labels" Datasets="@Datasets" />
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-2">View History</MudButton>
+    </MudPaper>
+
+    <!-- Workout History -->
+    <MudPaper Class="mt-4 pa-4" Elevation="4">
+        <MudText Typo="Typo.h6">My Workout History</MudText>
+
+        <MudTable Items="@WorkoutHistory" Dense="true">
+            <HeaderContent>
+                <MudTh>Workout</MudTh>
+                <MudTh>Sets</MudTh>
+                <MudTh>Date</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.SessionTitle</MudTd>
+                <MudTd>@context.Sets</MudTd>
+                <MudTd>@context.Date</MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-2">View Full History</MudButton>
+    </MudPaper>
+
+    <!-- Achievements Section -->
+    <MudPaper Class="mt-4 pa-4" Elevation="4">
+        <MudText Typo="Typo.h6">My Achievements</MudText>
+        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Secondary" Class="mr-2" />
+        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Large" Color="Color.Secondary" Class="mr-2" />
+        <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Size="Size.Large" Color="Color.Secondary" />
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-2">View All</MudButton>
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    public class WorkoutProgressDto
+    {
+        public string SessionTitle { get; set; } = string.Empty;
+        public int Sets { get; set; }
+        public string Date { get; set; } = string.Empty;
+    }
+
+    private List<WorkoutProgressDto> WorkoutHistory = new()
+    {
+        new WorkoutProgressDto { SessionTitle = "Full-Body", Sets = 3, Date = "16/3" },
+        new WorkoutProgressDto { SessionTitle = "Squat Burn", Sets = 5, Date = "17/3" },
+    };
+
+    private string[] Labels = new[] { "Mon", "Tue", "Wed", "Thu", "Fri" };
+
+    private ChartSeries[] Datasets = new[]
+    {
+        new ChartSeries
+        {
+            Name = "Workouts",
+            Data = new double[] { 1, 0, 1, 1, 0 }
+        }
+    };
+}

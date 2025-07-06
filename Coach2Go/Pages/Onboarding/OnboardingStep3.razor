@@ -1,6 +1,7 @@
 @namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
 @inject NavigationManager Navigation
+@inject HttpClient Http
 
 <MudPaper Class="onboarding-container">
 
@@ -22,9 +23,34 @@
         }
     </div>
 
+    @if (selectedLocation == "Gym")
+    {
+        <MudSelect T="string" Label="Select a Gym" @bind-Value="selectedGym" Class="mt-4">
+            @foreach (var gym in gymOptions)
+            {
+                <MudSelectItem Value="@gym">@gym</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudButton OnClick="FetchEquipment" Variant="Variant.Filled" Color="Color.Primary" Class="mt-2">
+            Load Equipment
+        </MudButton>
+
+        @if (equipmentList.Any())
+        {
+            <MudList T="string">
+                @foreach (var item in equipmentList)
+                {
+                    <MudListItem T="string">@item</MudListItem>
+                }
+            </MudList>
+        }
+    }
+
     <div class="onboarding-footer">
         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
     </div>
+
 </MudPaper>
 
 @code {
@@ -33,9 +59,14 @@
     private string? selectedLocation;
     private readonly string[] trainingLocations = { "Home", "Gym", "Bodyweight" };
 
+    private string? selectedGym;
+    private List<string> gymOptions = new() { "PureGym", "AnytimeFitness" }; // ✅ add this
+    private List<string> equipmentList = new();
+
     private async Task NextStep()
     {
         Console.WriteLine($"Selected location: {selectedLocation}");
+        Console.WriteLine($"Selected gym: {selectedGym}");
         await OnNext.InvokeAsync();
     }
 
@@ -47,6 +78,15 @@
     void SelectLocation(string location)
     {
         selectedLocation = location;
+        equipmentList.Clear(); // reset if user switches location
+    }
+
+    private async Task FetchEquipment()
+    {
+        if (!string.IsNullOrWhiteSpace(selectedGym))
+        {
+            equipmentList = await Http.GetFromJsonAsync<List<string>>($"/api/equipment/{selectedGym}") ?? new();
+        }
     }
 }
 <style scoped>
