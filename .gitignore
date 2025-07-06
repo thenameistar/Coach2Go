@@ -65,6 +65,13 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Secrets and sensitive config
+Coach2Go.Api/appsettings.Secrets.json
+!Coach2Go.Api/appsettings.json
+Coach2Go.Api/appsettings.Development.json
+Coach2Go.Api/appsettings.Production.json
+Coach2Go.Api/appsettings.Local.json
+
 # Tye
 .tye/
 
