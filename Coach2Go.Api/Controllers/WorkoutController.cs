@@ -126,7 +126,11 @@ namespace Coach2Go.Api.Controllers
             user.Goal = dto.Goal;
             user.Type = dto.Type;
             user.Experience = dto.Experience;
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195
             var matchingPlan = await _context.WorkoutPlans.FirstOrDefaultAsync(p =>
                 p.Goal == dto.Goal &&
                 p.Type == dto.Type &&
@@ -135,11 +139,20 @@ namespace Coach2Go.Api.Controllers
 
             if (matchingPlan == null) return NotFound("No matching plan");
 
+<<<<<<< HEAD
             user.WorkoutPlanId = matchingPlan.Id;
+=======
+            user.WorkoutPlanId =matchingPlan.Id; 
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195
 
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Workout plan assigned", PlanId = matchingPlan.Id });
         }
     }
+<<<<<<< HEAD
 }
+=======
+
+}
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195

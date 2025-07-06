@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+<<<<<<< HEAD
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] 
@@ -34,6 +35,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+=======
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
@@ -45,7 +48,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195
 builder.Services.AddControllers().AddJsonOptions(x =>
 {
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -54,7 +60,11 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+<<<<<<< HEAD
 var app = builder.Build();
+=======
+var app = builder.Build(); 
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195
 
 if (app.Environment.IsDevelopment())
 {
@@ -74,7 +84,13 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+<<<<<<< HEAD
     context.Database.EnsureCreated();
 }
 
 app.Run();
+=======
+    context.Database.EnsureCreated():
+}
+app.Run();
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195

@@ -9,6 +9,7 @@ namespace Coach2Go.Api.Models
         public string Username { get; set; } = default!;
         public string Email { get; set; } = default!;
 
+<<<<<<< HEAD
         public string? GoogleId { get; set; } 
 
         public string Goal { get; set; } = string.Empty;
@@ -19,5 +20,8 @@ namespace Coach2Go.Api.Models
 
         [ForeignKey("WorkoutPlanId")]
         public WorkoutPlan? WorkoutPlan { get; set; }
+=======
+        public List<WorkoutPlan> Plans { get; set; } = new(); 
+>>>>>>> e02b59bb5928a45dfbb571013add94516414e195
     }
 }
