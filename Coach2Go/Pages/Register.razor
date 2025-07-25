@@ -1,4 +1,5 @@
 @page "/register"
+@using MudBlazor
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
@@ -47,18 +48,23 @@
     private async Task HandleRegister()
     {
         errorMessage = string.Empty;
-
+        
+        var goal = await localStorage.GetItemAsync<string>("onboarding_goal");
+        var type = await localStorage.GetItemAsync<string>("onboarding_type");
+        var experience = await localStorage.GetItemAsync<string>("onboarding_experience");
+            
         var registerData = new RegisterRequest
         {
             Username = username,
             Email = email,
-            Password = password 
+            Password = password,
+            Goal = goal ?? "",
+            Type = type ?? "",
+            Experience = experience ?? ""
         };
-
         try
         {
             var response = await Http.PostAsJsonAsync("api/auth/register", registerData);
-
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<LoginResult>();
@@ -95,6 +101,10 @@
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        
+        public string Goal { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Experience { get; set; } = string.Empty;
     }
 
     public class LoginResult

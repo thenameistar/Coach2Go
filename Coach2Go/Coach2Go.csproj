@@ -5,7 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <WasmEnableSIMD>false</WasmEnableSIMD>
-    </PropertyGroup>
+
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
+    <DisableParallelSourceCopy>true</DisableParallelSourceCopy>
+    <DisableWebAssemblyFileHashing>true</DisableWebAssemblyFileHashing>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />

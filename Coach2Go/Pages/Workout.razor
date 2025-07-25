@@ -16,71 +16,88 @@
         </MudItem>
     </MudGrid>
 
+    <!-- AI Toggle -->
+    <MudSwitch T="bool" @bind_Checked="_useAI" Color="Color.Secondary" Label="Enable AI Recommendations" Class="my-2" />
+    
     <!-- Filters -->
     <MudPaper Class="d-flex justify-between mt-2 px-2 py-1 rounded" Elevation="2" Style="background: linear-gradient(90deg, #9C27B0, #E040FB);">
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mx-1 rounded-pill">Type</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mx-1 rounded-pill">Time</MudButton>
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mx-1 rounded-pill">Goal</MudButton>
-    </MudPaper>
+        <MudSelect T="string" @bind-Value="selectedType" Label="Type" Dense Class="mx-1 rounded-pill">
+            <MudSelectItem Value="@("Strength")">Strength</MudSelectItem>
+            <MudSelectItem Value="@("Mobility")">Mobility</MudSelectItem>
+            <MudSelectItem Value="@("HIIT")">HIIT</MudSelectItem>
+        </MudSelect>
+    
+        <MudSelect T="string" @bind-Value="selectedTime" Label="Time" Dense Class="mx-1 rounded-pill">
+            <MudSelectItem Value="@("15")">15</MudSelectItem>
+            <MudSelectItem Value="@("30")">30</MudSelectItem>
+            <MudSelectItem Value="@("45")">45</MudSelectItem>
+        </MudSelect>
+    
+    <MudSelect T="string" @bind-Value="selectedGoal" Label="Goal" Dense Class="mx-1 rounded-pill">
+        <MudSelectItem Value="@("LoseWeight")">Lose Weight</MudSelectItem>
+        <MudSelectItem Value="@("BuildMuscle")">Build Muscle</MudSelectItem>
+        <MudSelectItem Value="@("GeneralFitness")">General Fitness</MudSelectItem>
+    </MudSelect>
+</MudPaper>
 
-    <!-- Workout Sections -->
-    @WorkoutSection("Recommended For You", recommended)
-    @WorkoutSection("Popular", popular)
-    @WorkoutSection("Recovery and Flow", recovery)
+    <MudButton OnClick="ApplyFilters" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3 w-100">Find Workouts</MudButton>
+
+    @if (filteredWorkouts.Count > 0)
+    {
+        <h4 class="mt-4">Filtered Results</h4>
+        <MudGrid>
+            @foreach (var workout in filteredWorkouts)
+            {
+                <MudItem Xs="6" Sm="4">
+                    <MudPaper Class="p-2 text-center" Elevation="3">
+                        <MudImage Src="@workout.ImagePath" Style="border-radius: 12px; width: 100%; height: 100px; object-fit: cover;" />
+                        <MudText Typo="Typo.subtitle2">@workout.Title</MudText>
+                        <MudText Typo="Typo.caption">@workout.Duration min · @workout.Level</MudText>
+                        @if (workout.IsAiGenerated)
+                        {
+                           <MudChip T="string" Color="Color.Info" Class="mt-1">AI</MudChip>
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (searched)
+    {
+        <MudText Class="mt-4">No matching workouts found.</MudText>
+    }
 
 </MudContainer>
 
 @code {
-    private List<WorkoutSessionDto> recommended = new();
-    private List<WorkoutSessionDto> popular = new();
-    private List<WorkoutSessionDto> recovery = new();
+    private List<WorkoutSessionDto> filteredWorkouts = new();
+    private bool _useAI = false;
+    private bool searched = false;
 
-    protected override async Task OnInitializedAsync()
+    private string? selectedType;
+    private string? selectedTime;
+    private string? selectedGoal;
+
+    private async Task ApplyFilters()
     {
-        recommended = await Http.GetFromJsonAsync<List<WorkoutSessionDto>>("api/workout/sessions-by-category/Recommended") ?? new();
-        popular = await Http.GetFromJsonAsync<List<WorkoutSessionDto>>("api/workout/sessions-by-category/Popular") ?? new();
-        recovery = await Http.GetFromJsonAsync<List<WorkoutSessionDto>>("api/workout/sessions-by-category/Recovery") ?? new();
-    }
+        searched = true;
 
-    private RenderFragment WorkoutSection(string title, List<WorkoutSessionDto> sessions) => __builder =>
-    {
-        __builder.OpenElement(0, "div");
-        __builder.AddMarkupContent(1, $"<h3 class=\"mt-4\">{title}</h3>");
-        __builder.OpenComponent<MudGrid>(2);
-
-        int seq = 3;
-        foreach (var session in sessions)
+        var prefs = new WorkoutPreferencesDto
         {
-            __builder.OpenComponent<MudItem>(seq++);
-            __builder.AddAttribute(seq++, "xs", 4);
-            __builder.AddAttribute(seq++, "ChildContent", (RenderFragment)((b) =>
-            {
-                b.OpenComponent<MudPaper>(seq++);
-                b.AddAttribute(seq++, "Class", "p-1 text-center");
-                b.AddAttribute(seq++, "Elevation", 1);
-                b.AddAttribute(seq++, "ChildContent", (RenderFragment)((b2) =>
-                {
-                    b2.OpenComponent<MudImage>(seq++);
-                    b2.AddAttribute(seq++, "Src", session.ImagePath);
-                    b2.AddAttribute(seq++, "Style", "border-radius: 12px; width: 100%; height: 100px; object-fit: cover;");
-                    b2.CloseComponent();
+            Type = selectedType ?? "",
+            Time = int.TryParse(selectedTime, out int t) ? t : 0,
+            Goal = selectedGoal ?? ""
+        };
 
-                    b2.OpenComponent<MudText>(seq++);
-                    b2.AddAttribute(seq++, "Typo", Typo.body2);
-                    b2.AddAttribute(seq++, "ChildContent", (RenderFragment)((b3) => b3.AddContent(seq++, $"{session.Duration} min")));
-                    b2.CloseComponent();
-
-                    b2.OpenComponent<MudText>(seq++);
-                    b2.AddAttribute(seq++, "Typo", Typo.caption);
-                    b2.AddAttribute(seq++, "ChildContent", (RenderFragment)((b3) => b3.AddContent(seq++, session.Title)));
-                    b2.CloseComponent();
-                }));
-                b.CloseComponent(); 
-            }));
-            __builder.CloseComponent(); 
+        if (_useAI)
+        {
+            var res = await Http.PostAsJsonAsync("api/workout/generate-ai", prefs);
+            filteredWorkouts = await res.Content.ReadFromJsonAsync<List<WorkoutSessionDto>>() ?? new();
         }
-
-        __builder.CloseComponent(); 
-        __builder.CloseElement();   
-    };
+        else
+        {
+            var res = await Http.PostAsJsonAsync("api/workout/static-suggestions", prefs);
+            filteredWorkouts = await res.Content.ReadFromJsonAsync<List<WorkoutSessionDto>>() ?? new();
+        }
+    }
 }

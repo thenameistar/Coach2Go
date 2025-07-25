@@ -27,7 +27,7 @@
         <MudButton 
             Variant="@(NavigationManager.Uri.Contains("/plan") ? Variant.Filled : Variant.Outlined)"
             Color="Color.Primary"
-            @onclick="@(() => NavigationManager.NavigateTo("/plan/1"))"
+            @onclick="@(() => NavigationManager.NavigateTo($"/plan/{AuthService.CurrentUser?.WorkoutPlanId}"))"
             Class="rounded-lg px-4"
             Style="min-width: 100px;">
             Plan
@@ -36,8 +36,12 @@
 
     <!-- Daily Workout Section -->
     <MudPaper Class="daily-workout-card" Elevation="2" @onclick="@(() => NavigationManager.NavigateTo("/dailyworkout"))" Style="cursor: pointer;">
-        <MudImage Src="images/workout1.jpg" Alt="Workout image" Class="workout-img" />
+        <MudImage Src="@(dailyImage ?? "images/default.jpg")" Alt="Workout image" Class="workout-img" />
     </MudPaper>
+
+    <MudText Typo="Typo.subtitle1" Class="text-white mt-2 px-4">
+        @dailyTitle
+    </MudText>
 
     <!-- Scrollable Today’s Goals widgets -->
     <MudText Typo="Typo.h6" Class="mb-2 px-4" Style="color: white;">Today’s Goals</MudText>
@@ -94,15 +98,34 @@
     </MudPaper>
 
 </MudContainer>
-
 @code {
     private string username { get; set; } = "User";
     private string _goal1 = string.Empty;
+    private string? dailyImage;
+    private string? dailyTitle;
 
     protected override async Task OnInitializedAsync()
     {
         await AuthService.CheckAuthentication();
         username = AuthService.CurrentUser?.Username ?? "User";
+
+        try
+        {
+            var userId = AuthService.CurrentUser?.Id ?? 0;
+            var plan = await Http.GetFromJsonAsync<WorkoutPlanDto>($"api/workout/daily/{userId}");
+
+            var today = DateTime.Today.DayOfWeek.ToString();
+            var session = plan?.Sessions?
+                .FirstOrDefault(s => s.Day.Equals(today, StringComparison.OrdinalIgnoreCase))
+                ?? plan?.Sessions?.FirstOrDefault();
+
+            dailyImage = session?.ImagePath;
+            dailyTitle = session?.Title;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading daily workout for dashboard: " + ex.Message);
+        }
     }
 }
 

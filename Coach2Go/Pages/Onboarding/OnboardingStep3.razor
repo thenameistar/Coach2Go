@@ -1,7 +1,7 @@
 @namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
-@inject NavigationManager Navigation
-@inject HttpClient Http
+@using Coach2Go.Shared.Dtos
+@using Coach2Go.Shared
 
 <MudPaper Class="onboarding-container">
 
@@ -36,14 +36,25 @@
             Load Equipment
         </MudButton>
 
-        @if (equipmentList.Any())
+        @if (equipmentList?.Any() == true)
         {
-            <MudList T="string">
-                @foreach (var item in equipmentList)
-                {
-                    <MudListItem T="string">@item</MudListItem>
-                }
-            </MudList>
+            <MudPaper Class="pa-4 mt-2" Elevation="1">
+                <MudGrid>
+                    @foreach (var item in equipmentList)
+                    {
+                        <MudItem xs="12">
+                            <MudGrid Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body1">@item.EquipmentName</MudText>
+                                <MudAvatar 
+                                   Image="@($"/{(item.ImageUrl?.StartsWith("images/") == true ? item.ImageUrl : $"images/{item.ImageUrl ?? "default.jpg"}")}")"
+                                   Size="Size.Large"
+                                   Class="mud-avatar-square"
+                                   Style="width: 60px; height: 60px;" />
+                            </MudGrid>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
         }
     }
 
@@ -56,17 +67,46 @@
 @code {
     [Parameter] public EventCallback OnNext { get; set; }
 
+    [Inject] private OnboardingState OnboardingState { get; set; } = default!;
+    [Inject] private HttpClient Http { get; set; } = default!;
+    [Inject] private AuthService AuthService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
     private string? selectedLocation;
     private readonly string[] trainingLocations = { "Home", "Gym", "Bodyweight" };
 
     private string? selectedGym;
-    private List<string> gymOptions = new() { "PureGym", "AnytimeFitness" }; // ✅ add this
-    private List<string> equipmentList = new();
+    private List<string> gymOptions = new() { "PureGym", "AnytimeFitness" }; 
+    private List<GymEquipmentDto> equipmentList = new();
 
     private async Task NextStep()
     {
         Console.WriteLine($"Selected location: {selectedLocation}");
         Console.WriteLine($"Selected gym: {selectedGym}");
+
+       
+        OnboardingState.Type = selectedLocation == "Gym" ? "Gym" : "Bodyweight";
+
+        var request = new
+        {
+            Goal = OnboardingState.Goal,
+            Type = OnboardingState.Type,
+            Experience = OnboardingState.Experience
+        };
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/user/onboarding", request);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("❌ Onboarding failed: " + await response.Content.ReadAsStringAsync());
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("❌ Error submitting onboarding: " + ex.Message);
+        }
+
         await OnNext.InvokeAsync();
     }
 
@@ -78,17 +118,18 @@
     void SelectLocation(string location)
     {
         selectedLocation = location;
-        equipmentList.Clear(); // reset if user switches location
+        equipmentList.Clear(); 
     }
 
     private async Task FetchEquipment()
     {
         if (!string.IsNullOrWhiteSpace(selectedGym))
         {
-            equipmentList = await Http.GetFromJsonAsync<List<string>>($"/api/equipment/{selectedGym}") ?? new();
+            equipmentList = await Http.GetFromJsonAsync<List<GymEquipmentDto>>($"/api/gymequipment/gym/{selectedGym}") ?? new();
         }
     }
 }
+
 <style scoped>
 .onboarding-container {
     background-color: #000;

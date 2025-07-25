@@ -1,6 +1,8 @@
 ﻿@page "/progress"
 @using Coach2Go.Shared.Dtos
 @using MudBlazor
+@inject HttpClient Http
+@inject AuthService AuthService
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="pa-4">
 
@@ -15,14 +17,16 @@
         <MudText Typo="Typo.h6">Weekly Workout Streak</MudText>
         <MudText Typo="Typo.body2">Work out 3 times this week to hit your goal!</MudText>
 
-        <MudProgressLinear Value="66" Color="Color.Primary" Class="my-2" />
+        <MudProgressLinear Value="@WeeklyProgressPercent" Color="Color.Primary" Class="my-2" />
+        <MudText Typo="Typo.caption">@($"{WeeklyCount} / 3 completed")</MudText>
+
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" Style="color: white; border-color: white;">View History</MudButton>
     </MudPaper>
 
     <!-- Activity Chart -->
     <MudPaper Class="mt-4 pa-4" Elevation="4" Style="background: linear-gradient(to right, #d5a3f0, #e0c3fc);">
         <MudText Typo="Typo.h6">Activity</MudText>
-        <MudText Typo="Typo.caption">12 Mar - 18 Mar</MudText>
+        <MudText Typo="Typo.caption">@WeekRange</MudText>
 
         <MudChart ChartType="ChartType.Bar" Labels="@Labels" Datasets="@Datasets" />
 
@@ -62,27 +66,38 @@
 </MudContainer>
 
 @code {
-    public class WorkoutProgressDto
-    {
-        public string SessionTitle { get; set; } = string.Empty;
-        public int Sets { get; set; }
-        public string Date { get; set; } = string.Empty;
-    }
-
-    private List<WorkoutProgressDto> WorkoutHistory = new()
-    {
-        new WorkoutProgressDto { SessionTitle = "Full-Body", Sets = 3, Date = "16/3" },
-        new WorkoutProgressDto { SessionTitle = "Squat Burn", Sets = 5, Date = "17/3" },
-    };
-
+    private List<WorkoutProgressDto> WorkoutHistory = new();
+    private int[] ChartData = new int[5];
     private string[] Labels = new[] { "Mon", "Tue", "Wed", "Thu", "Fri" };
+    private ChartSeries[] Datasets = new ChartSeries[0];
+    private int WeeklyCount = 0;
+    private double WeeklyProgressPercent => WeeklyCount * 100.0 / 3;
+    private string WeekRange = "";
 
-    private ChartSeries[] Datasets = new[]
+    protected override async Task OnInitializedAsync()
     {
-        new ChartSeries
+        try
         {
-            Name = "Workouts",
-            Data = new double[] { 1, 0, 1, 1, 0 }
+            var userId = AuthService.CurrentUser?.Id ?? 0;
+            if (userId == 0) return;
+
+            WeeklyCount = (await Http.GetFromJsonAsync<int?>($"api/progress/weekly/{userId}")) ?? 0;
+            ChartData = await Http.GetFromJsonAsync<int[]>($"api/progress/activity/{userId}") ?? Array.Empty<int>();
+            WorkoutHistory = await Http.GetFromJsonAsync<List<WorkoutProgressDto>>($"api/progress/history/{userId}")
+                             ?? new List<WorkoutProgressDto>();
+            
+            Datasets = new[] {
+                new ChartSeries { Name = "Workouts", Data = ChartData.Select(c => (double)c).ToArray() }
+            };
+
+            var monday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
+            var sunday = monday.AddDays(6);
+            WeekRange = $"{monday:dd MMM} - {sunday:dd MMM}";
         }
-    };
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine("❌ Failed to load progress data: " + ex.Message);
+        }
+    }
+        
 }

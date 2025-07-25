@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using Coach2Go.Shared.Dtos;
 using Microsoft.AspNetCore.Components;
 
-public class AuthService
+public class AuthService 
 {
     private readonly ILocalStorageService _localStorage;
     private readonly HttpClient _http;

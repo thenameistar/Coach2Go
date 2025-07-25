@@ -1,6 +1,8 @@
 @namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
+@using Coach2Go.Shared
 @inject NavigationManager Navigation
+@inject OnboardingState OnboardingState
 
 <MudPaper Class="onboarding-container">
     <div class="onboarding-header">
@@ -22,7 +24,7 @@
     </div>
 
     <div class="onboarding-footer">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" Disabled="@string.IsNullOrWhiteSpace(selectedExperience)">Next</MudButton>
     </div>
 </MudPaper>
 
@@ -34,7 +36,12 @@
 
     private async Task NextStep()
     {
-        Console.WriteLine($"Selected: {selectedExperience}");
+        if (!string.IsNullOrWhiteSpace(selectedExperience))
+        {
+            OnboardingState.Experience = selectedExperience;
+            Console.WriteLine($" Saved experience: {OnboardingState.Experience}");
+        }
+
         await OnNext.InvokeAsync();
     }
 

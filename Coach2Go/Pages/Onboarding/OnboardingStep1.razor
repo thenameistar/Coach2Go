@@ -1,6 +1,9 @@
 @namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
+@using Coach2Go.Shared
 @inject NavigationManager Navigation
+@inject OnboardingState OnboardingState
+
 
 <MudPaper Class="onboarding-container">
     <!-- Skip Button -->
@@ -26,7 +29,7 @@
 
     <!-- Next Button -->
     <div class="onboarding-footer">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" Disabled="@string.IsNullOrWhiteSpace(selectedGoal)">Next</MudButton>
     </div>
 </MudPaper>
 
@@ -38,6 +41,12 @@
 
     private async Task NextStep()
     {
+        if (!string.IsNullOrWhiteSpace(selectedGoal))
+        {
+            OnboardingState.Goal = selectedGoal;
+            Console.WriteLine($" Saved goal to state: {OnboardingState.Goal}");
+        }
+
         await OnNext.InvokeAsync();
     }
 

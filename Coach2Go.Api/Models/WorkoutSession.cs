@@ -12,6 +12,14 @@ namespace Coach2Go.Api.Models
         public int WorkoutPlanId { get; set; }
         public WorkoutPlan WorkoutPlan { get; set; } = default!;
         public List<Exercise> Exercises { get; set; } = new();
+        public bool IsCompleted { get; set; }
+        public DateTime? CompletedDate { get; set; }
+        public int? UserId { get; set; }          
+        public User? User { get; set; }   
+        public string? TargetMuscles { get; set; }
+        public string? Level { get; set; }
+        public string? Equipment { get; set; }
+        public string Type { get; set; } = string.Empty;
 
     }
 }

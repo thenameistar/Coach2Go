@@ -2,18 +2,20 @@
 @namespace Coach2Go.Shared
 @using MudBlazor
 @using MudBlazor.Services
+@inject AuthService AuthService
 
 <MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
-    <MudDialogProvider />
-    <MudSnackbarProvider />
-    
-    <MudLayout Class="main-layout">
-        <MudMainContent Class="main-content">
-            @Body
-        </MudMainContent>
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudPopoverProvider />
 
-        <BottomNavMenu />
-    </MudLayout>
+<MudLayout Class="main-layout">
+    <MudMainContent Class="main-content">
+        @Body
+    </MudMainContent>
+
+    <BottomNavMenu />
+</MudLayout>
 
 @code {
     private MudTheme _theme = new();

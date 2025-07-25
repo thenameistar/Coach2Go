@@ -22,6 +22,13 @@ namespace Coach2Go.Shared.Dtos
         public string Day { get; set; } = string.Empty; 
         public int Week { get; set; }
         public List<ExerciseDto> Exercises { get; set; } = new();
+        public bool IsCompleted { get; set; }
+        public string? TargetMuscles { get; set; }
+        public string? Level { get; set; }
+        public string? Equipment { get; set; }
+        public bool IsAiGenerated { get; set; } 
+        public string? Description { get; set; }
+
     }
 
     public class ExerciseDto

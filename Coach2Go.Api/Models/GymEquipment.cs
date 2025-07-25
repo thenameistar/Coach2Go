@@ -5,5 +5,6 @@ namespace Coach2Go.Api.Models
         public int Id { get; set; }
         public string GymName { get; set; } = string.Empty;
         public string EquipmentName { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
     }
 }

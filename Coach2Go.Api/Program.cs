@@ -4,20 +4,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using Coach2Go.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddUserSecrets<Program>();
+
+builder.WebHost.UseUrls("http://localhost:5204"); 
 
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: true);
+Console.WriteLine("🔗 Connection string: " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] 
-    ?? throw new InvalidOperationException("JWT Key is missing."));
+var key = Encoding.ASCII.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is missing."));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -38,26 +42,26 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClient", policy =>
     {
-        policy.WithOrigins("http://localhost:5204")
+        policy.WithOrigins("http://localhost:5136") // ✅ allow client origin
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-
 builder.Services.AddControllers().AddJsonOptions(x =>
 {
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
+builder.Services.AddHttpClient<IAiService, OpenAiService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Configuration.AddUserSecrets<Program>();
 
 var app = builder.Build();
 
@@ -69,12 +73,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowClient");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 
 using (var scope = app.Services.CreateScope())
 {

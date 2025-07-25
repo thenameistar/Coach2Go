@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>coach2go-api-dev</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +23,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Coach2Go.Shared\Coach2Go.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+  <None Update="appsettings.Secrets.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
   </ItemGroup>
 
 </Project>

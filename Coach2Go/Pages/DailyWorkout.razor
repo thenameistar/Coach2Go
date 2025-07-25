@@ -5,18 +5,17 @@
 @inject HttpClient Http
 @inject IDialogService DialogService
 @using Coach2Go.Pages.Dialogs
-
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
 
 <!-- Top bar -->
 <MudPaper Class="top-bar" Elevation="0" Style="width: 100%; padding-top: 1rem;">
     <MudGrid Class="px-4" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-        <!-- Left Side: Back + Pause -->
         <MudItem xs="4" Class="d-flex align-items-center gap-2">
             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                            Color="Color.Primary"
                            Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
                            OnClick="NavigateBackToDashboard" />
-
             @if (isWorkoutStarted)
             {
                 <MudIconButton Icon="@Icons.Material.Filled.Pause"
@@ -26,7 +25,6 @@
             }
         </MudItem>
 
-        <!-- Center: Timer Text -->
         <MudItem xs="4" Class="d-flex justify-center">
             @if (isWorkoutStarted)
             {
@@ -36,13 +34,11 @@
             }
         </MudItem>
 
-        <!-- Right Side: Timer Button + Bookmark Button -->
         <MudItem xs="4" Class="d-flex justify-end gap-2">
             <MudIconButton Icon="@Icons.Material.Filled.Timer"
                            Color="Color.Primary"
                            Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
                            OnClick="@ResetTimer" />
-
             <MudIconButton Icon="@Icons.Material.Filled.Bookmark"
                            Color="Color.Primary"
                            Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;" />
@@ -51,20 +47,48 @@
 </MudPaper>
 
 <!-- Title and Image -->
-<MudText Typo="Typo.h4" Align="Align.Center" Class="mt-2 mb-2">
-    @(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].Title : "Loading...")
-</MudText>
-<MudImage Src="@(workoutPlan?.Sessions?.Count > 0 ? workoutPlan.Sessions[0].ImagePath : "images/default.jpg")" />
+@if (currentSession is not null)
+{
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mt-2 mb-2">
+        @currentSession.Title
+    </MudText>
+    <MudImage Src="@currentSession.ImagePath" Alt="@currentSession.Title" />
+}
+else
+{
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-2 mb-2">
+        Loading...
+    </MudText>
+}
 
 <!-- Workout Info -->
-<MudPaper Class="info-box" Elevation="0">
-    <MudGrid>
-        <MudItem xs="6"><b>Target Muscles:</b></MudItem><MudItem xs="6">Chest, Glutes, Core</MudItem>
-        <MudItem xs="6"><b>Level:</b></MudItem><MudItem xs="6">Beginner</MudItem>
-        <MudItem xs="6"><b>Equipment:</b></MudItem><MudItem xs="6">Bodyweight</MudItem>
-        <MudItem xs="6"><b>Duration:</b></MudItem><MudItem xs="6">30 min</MudItem>
-    </MudGrid>
-</MudPaper>
+@if (currentSession is not null)
+{
+    <MudPaper Class="my-4 mx-4 px-4 py-2" Style="border-radius: 16px; background: linear-gradient(to right, #a24bdc, #c994f8); color: white;">
+        <MudGrid>
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1">Target Muscles:</MudText>
+                <MudText Typo="Typo.body1">@currentSession.TargetMuscles</MudText>
+
+                <MudText Typo="Typo.subtitle1">Level:</MudText>
+                <MudText Typo="Typo.body1">@currentSession.Level</MudText>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudText Typo="Typo.subtitle1">Equipment:</MudText>
+                <MudText Typo="Typo.body1">@currentSession.Equipment</MudText>
+
+                <MudText Typo="Typo.subtitle1">Duration:</MudText>
+                <MudText Typo="Typo.body1">@currentSession.Duration</MudText>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+<MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@MarkComplete">
+    ✅ Mark as Done
+</MudButton>
+
+
 
 <!-- Exercises Section -->
 @if (isLoading)
@@ -73,7 +97,7 @@
         Loading exercises...
     </MudText>
 }
-else if (exercises?.Length > 0 && exerciseCompleted?.Length == exercises.Length)
+else if (exercises.Length > 0)
 {
     @foreach (var (exercise, index) in exercises.Select((e, i) => (e, i)))
     {
@@ -127,10 +151,12 @@ else
 
 @code {
     private WorkoutPlanDto? workoutPlan;
+    private WorkoutSessionDto? currentSession;
     private (string Icon, string Name, string Details)[] exercises = Array.Empty<(string, string, string)>();
     private bool[] exerciseCompleted = Array.Empty<bool>();
     private bool isWorkoutStarted = false;
     private bool isLoading = true;
+    private int userId;
 
     private int minutes = 0; 
     private int seconds = 0;
@@ -139,18 +165,21 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await AuthService.CheckAuthentication();
         try
         {
-            int userId = 1; // TODO: get this from local storage or authentication state
+            userId = AuthService.CurrentUser?.Id ?? 0;
             workoutPlan = await Http.GetFromJsonAsync<WorkoutPlanDto>($"api/workout/daily/{userId}");
 
             if (workoutPlan?.Sessions?.Count > 0)
             {
-                var session = workoutPlan.Sessions[0];
+                var today = DateTime.Today.DayOfWeek.ToString();
+                currentSession = workoutPlan.Sessions.FirstOrDefault(s => s.Day.Equals(today, StringComparison.OrdinalIgnoreCase))
+                    ?? workoutPlan.Sessions.First();
 
-                if (session.Exercises != null && session.Exercises.Count > 0)
+                if (currentSession?.Exercises != null)
                 {
-                    exercises = session.Exercises
+                    exercises = currentSession.Exercises
                         .Select(e => (Icon: e.ImagePath, Name: e.Name, Details: e.Details))
                         .ToArray();
 
@@ -160,7 +189,7 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error loading exercises: " + ex.Message);
+            Console.WriteLine("Error loading session: " + ex.Message);
         }
         finally
         {
@@ -210,6 +239,15 @@ else
         minutes = 0;
         seconds = 0;
         StateHasChanged();
+    }
+    
+    private async Task MarkComplete()
+    {
+        if (currentSession?.Id is int sessionId && userId != 0)
+        {
+            await Http.PostAsync($"api/workout/session/{sessionId}/complete?userId={userId}", null);
+            Snackbar.Add("Workout marked as complete!", Severity.Success);
+        }
     }
 
     private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
