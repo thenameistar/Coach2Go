@@ -3,13 +3,16 @@
 @using Coach2Go.Shared.Dtos
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@inject IDialogService DialogService
+@using Coach2Go.Pages.Dialogs
+@inject IJSRuntime JS
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="px-4 py-2 text-white">
 
     <!-- Top Bar -->
     <MudGrid AlignItems="Center" Justify="Justify.SpaceBetween">
         <MudItem>
-            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/dashboard"))" />
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="NavigateBack" />
         </MudItem>
         <MudItem>
             <MudIconButton Icon="@Icons.Material.Filled.Bookmark" Color="Color.Primary" />
@@ -17,14 +20,22 @@
     </MudGrid>
 
     <!-- AI Toggle -->
-    <MudSwitch T="bool" @bind_Checked="_useAI" Color="Color.Secondary" Label="Enable AI Recommendations" Class="my-2" />
-    
+   <MudSwitch T="bool" @bind-Checked="_useAI" Color="Color.Secondary" Label="Enable AI Recommendations" Class="my-2" />
+   
+   <MudSwitch T="bool"
+           @bind-Checked="_useAI"
+           Color="Color.Primary"
+           Label="Enable AI Workouts"
+           OnChanged="HandleAiToggle" />
+
     <!-- Filters -->
     <MudPaper Class="d-flex justify-between mt-2 px-2 py-1 rounded" Elevation="2" Style="background: linear-gradient(90deg, #9C27B0, #E040FB);">
-        <MudSelect T="string" @bind-Value="selectedType" Label="Type" Dense Class="mx-1 rounded-pill">
-            <MudSelectItem Value="@("Strength")">Strength</MudSelectItem>
-            <MudSelectItem Value="@("Mobility")">Mobility</MudSelectItem>
-            <MudSelectItem Value="@("HIIT")">HIIT</MudSelectItem>
+        <MudSelect T="string" @bind-Value="selectedType" Label="Category" Dense Class="mx-1 rounded-pill">
+            <MudSelectItem Value="@("General")">General</MudSelectItem>
+            <MudSelectItem Value="@("Explosive Power")">Explosive Power</MudSelectItem>
+            <MudSelectItem Value="@("Strength - Lower")">Strength - Lower</MudSelectItem>
+            <MudSelectItem Value="@("Mobility / Recovery")">Mobility / Recovery</MudSelectItem>
+            <MudSelectItem Value="@("Core Stability")">Core Stability</MudSelectItem>
         </MudSelect>
     
         <MudSelect T="string" @bind-Value="selectedTime" Label="Time" Dense Class="mx-1 rounded-pill">
@@ -34,9 +45,14 @@
         </MudSelect>
     
     <MudSelect T="string" @bind-Value="selectedGoal" Label="Goal" Dense Class="mx-1 rounded-pill">
-        <MudSelectItem Value="@("LoseWeight")">Lose Weight</MudSelectItem>
-        <MudSelectItem Value="@("BuildMuscle")">Build Muscle</MudSelectItem>
-        <MudSelectItem Value="@("GeneralFitness")">General Fitness</MudSelectItem>
+        <MudSelectItem Value="@("Lose Weight")">Lose Weight</MudSelectItem>
+        <MudSelectItem Value="@("Build Muscle")">Build Muscle</MudSelectItem>
+        <MudSelectItem Value="@("General Fitness")">General Fitness</MudSelectItem>
+    </MudSelect>
+
+    <MudSelect T="string" @bind-Value="selectedEquipment" Label="Equipment" Dense Class="mx-1 rounded-pill">
+        <MudSelectItem Value="@("Bodyweight")">Bodyweight</MudSelectItem>
+        <MudSelectItem Value="@("Gym")">Gym</MudSelectItem>
     </MudSelect>
 </MudPaper>
 
@@ -48,17 +64,20 @@
         <MudGrid>
             @foreach (var workout in filteredWorkouts)
             {
-                <MudItem Xs="6" Sm="4">
-                    <MudPaper Class="p-2 text-center" Elevation="3">
-                        <MudImage Src="@workout.ImagePath" Style="border-radius: 12px; width: 100%; height: 100px; object-fit: cover;" />
-                        <MudText Typo="Typo.subtitle2">@workout.Title</MudText>
-                        <MudText Typo="Typo.caption">@workout.Duration min · @workout.Level</MudText>
-                        @if (workout.IsAiGenerated)
-                        {
-                           <MudChip T="string" Color="Color.Info" Class="mt-1">AI</MudChip>
-                        }
-                    </MudPaper>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Style="cursor: pointer;" @onclick="() => ViewWorkoutDetail(workout.Title)">
+                        <MudCardMedia Image="@workout.ImagePath" Height="140" />
+                        <MudCardContent>
+                            <MudText Typo="Typo.subtitle1">@workout.Title</MudText>
+                            <MudText Typo="Typo.body2">@workout.Duration min · @workout.Level</MudText>
+                            @if (workout.IsAiGenerated)
+                            {
+                                <MudChip T="string" Color="Color.Info" Class="mt-1">AI</MudChip>
+                            }
+                        </MudCardContent>
+                    </MudCard>
                 </MudItem>
+                }
             }
         </MudGrid>
     }
@@ -74,6 +93,7 @@
     private bool _useAI = false;
     private bool searched = false;
 
+    private string? selectedEquipment;
     private string? selectedType;
     private string? selectedTime;
     private string? selectedGoal;
@@ -85,8 +105,10 @@
         var prefs = new WorkoutPreferencesDto
         {
             Type = selectedType ?? "",
+            Equipment = selectedEquipment ?? "",
             Time = int.TryParse(selectedTime, out int t) ? t : 0,
-            Goal = selectedGoal ?? ""
+            Goal = selectedGoal ?? "",
+            EnableAI = _useAI
         };
 
         if (_useAI)
@@ -99,5 +121,25 @@
             var res = await Http.PostAsJsonAsync("api/workout/static-suggestions", prefs);
             filteredWorkouts = await res.Content.ReadFromJsonAsync<List<WorkoutSessionDto>>() ?? new();
         }
+        Console.WriteLine($"Filtered workouts: {filteredWorkouts.Count}");
+        
+    }
+    private void ViewWorkoutDetail(string title)
+    {
+        NavigationManager.NavigateTo($"/workoutdetail/{Uri.EscapeDataString(title)}");
+    }
+    private async Task HandleAiToggle(bool value)
+    {
+        _useAI = value;
+        
+        if (_useAI)
+        {
+            var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small };
+            await DialogService.ShowAsync<AiDisclaimerDialog>("AI Disclaimer", options);
+        }
+    }
+    private async Task NavigateBack()
+    {
+        await JS.InvokeVoidAsync("history.back");
     }
 }

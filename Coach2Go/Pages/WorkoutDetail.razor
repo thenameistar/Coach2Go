@@ -1,0 +1,47 @@
+@page "/workoutdetail/{WorkoutTitle}"
+@using Coach2Go.Shared.Dtos
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject ISnackbar Snackbar
+
+@using System.Net.Http
+@using Microsoft.Extensions.Http
+
+@code {
+    [Parameter] 
+    public string? WorkoutTitle { get; set; }
+    private WorkoutSessionDto? workout;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("AuthorisedClient");
+
+        try
+        {
+            workout = await client.GetFromJsonAsync<WorkoutSessionDto>($"/api/workout/by-title/{WorkoutTitle}");
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to load workout", Severity.Error);
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task MarkAsCompleted()
+    {
+        var client = HttpClientFactory.CreateClient("AuthorisedClient");
+
+        var response = await client.PostAsync($"/api/workout/complete/{WorkoutTitle}", null);
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Workout marked as done", Severity.Success);
+            NavigationManager.NavigateTo("/workout");
+        }
+        else
+        {
+            Snackbar.Add("Failed to mark workout", Severity.Error);
+        }
+    }
+}

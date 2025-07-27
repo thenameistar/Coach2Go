@@ -7,6 +7,7 @@
 @using Coach2Go.Pages.Dialogs
 @inject AuthService AuthService
 @inject ISnackbar Snackbar
+@inject IJSRuntime JS
 
 <!-- Top bar -->
 <MudPaper Class="top-bar" Elevation="0" Style="width: 100%; padding-top: 1rem;">
@@ -15,7 +16,7 @@
             <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
                            Color="Color.Primary"
                            Style="background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%; width: 48px; height: 48px;"
-                           OnClick="NavigateBackToDashboard" />
+                           OnClick="NavigateBackToPrevious" />
             @if (isWorkoutStarted)
             {
                 <MudIconButton Icon="@Icons.Material.Filled.Pause"
@@ -264,9 +265,9 @@ else
         InvokeAsync(StateHasChanged); 
     }
 
-    private void NavigateBackToDashboard()
+    private async void NavigateBackToPrevious()
     {
-        NavigationManager.NavigateTo("/");
+        await JS.InvokeVoidAsync("history.back");
     }
 }
 

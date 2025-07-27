@@ -3,8 +3,15 @@
 @using MudBlazor
 @inject HttpClient Http
 @inject AuthService AuthService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
 
-<MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="pa-4">
+<MudContainer MaxWidth="MaxWidth.False" Class="pa-4">
+    <!-- Back Button -->
+    <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+               Color="Color.Primary"
+               Style="margin-bottom: 1rem;"
+               OnClick="NavigateBack" />
 
     <!-- Header -->
     <MudStack AlignItems="AlignItems.Center" Spacing="2">
@@ -56,15 +63,66 @@
     <!-- Achievements Section -->
     <MudPaper Class="mt-4 pa-4" Elevation="4">
         <MudText Typo="Typo.h6">My Achievements</MudText>
-        <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Size="Size.Large" Color="Color.Secondary" Class="mr-2" />
-        <MudIcon Icon="@Icons.Material.Filled.Star" Size="Size.Large" Color="Color.Secondary" Class="mr-2" />
-        <MudIcon Icon="@Icons.Material.Filled.MilitaryTech" Size="Size.Large" Color="Color.Secondary" />
+        @if (achievements == null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (achievements.Count == 0)
+        {
+            <MudText>No achievements yet. Start working out!</MudText>
+        }
+        else
+        {
+            <MudList T="AchievementDto" Dense="true">
+                @foreach (var a in achievements)
+                {
+                    <MudListItem>
+                        <MudAvatar Icon="@Icons.Material.Filled.EmojiEvents" Color="Color.Secondary" Size="Size.Medium" />
+                        <div class="ml-2">
+                            <MudText Typo="Typo.subtitle2">@a.Title</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@a.Description (@a.AchievedOn.ToShortDateString())</MudText>
+                        </div>
+                    </MudListItem>
+                }
+            </MudList>
+        }
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-2" OnClick="@(() => Navigation.NavigateTo("/progress"))">
+           View All
+        </MudButton>
+    </MudPaper>
 
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="mt-2">View All</MudButton>
+    <MudPaper Class="p-4 mt-6">
+        <MudText Typo="Typo.h5">📝 Diary Log</MudText>
+        @if (diaryEntries == null)
+        {
+            <MudProgressCircular Indeterminate="true" />
+            }
+            else if (diaryEntries.Count == 0)
+            {
+                <MudText>No diary entries found.</MudText>
+            }
+            else
+            {
+                <MudTable Items="diaryEntries" Elevation="1">
+                    <HeaderContent>
+                        <MudTh>Date</MudTh>
+                        <MudTh>Mood</MudTh>
+                        <MudTh>Goals</MudTh>
+                        <MudTh>Note</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
+                        <MudTd DataLabel="Mood">@context.Mood</MudTd>
+                        <MudTd DataLabel="Goals">
+                            @string.Join(", ", context.Goals.Where(g => !string.IsNullOrWhiteSpace(g)))
+                            </MudTd>
+                            <MudTd DataLabel="Note">@context.Note</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
     </MudPaper>
 
 </MudContainer>
-
 @code {
     private List<WorkoutProgressDto> WorkoutHistory = new();
     private int[] ChartData = new int[5];
@@ -73,19 +131,22 @@
     private int WeeklyCount = 0;
     private double WeeklyProgressPercent => WeeklyCount * 100.0 / 3;
     private string WeekRange = "";
+    private List<DiaryEntryDto>? diaryEntries;
+    private List<AchievementDto>? achievements;
+    private int userId; 
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var userId = AuthService.CurrentUser?.Id ?? 0;
+            userId = AuthService.CurrentUser?.Id ?? 0; 
             if (userId == 0) return;
 
             WeeklyCount = (await Http.GetFromJsonAsync<int?>($"api/progress/weekly/{userId}")) ?? 0;
             ChartData = await Http.GetFromJsonAsync<int[]>($"api/progress/activity/{userId}") ?? Array.Empty<int>();
             WorkoutHistory = await Http.GetFromJsonAsync<List<WorkoutProgressDto>>($"api/progress/history/{userId}")
                              ?? new List<WorkoutProgressDto>();
-            
+
             Datasets = new[] {
                 new ChartSeries { Name = "Workouts", Data = ChartData.Select(c => (double)c).ToArray() }
             };
@@ -93,11 +154,19 @@
             var monday = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
             var sunday = monday.AddDays(6);
             WeekRange = $"{monday:dd MMM} - {sunday:dd MMM}";
+
+            diaryEntries = await Http.GetFromJsonAsync<List<DiaryEntryDto>>($"api/diary/all/{userId}");
+            achievements = await Http.GetFromJsonAsync<List<AchievementDto>>($"api/achievements/{userId}");
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            Console.WriteLine("❌ Failed to load progress data: " + ex.Message);
+            Console.WriteLine($"Error loading progress or diary data: {ex.Message}");
+            diaryEntries ??= new();
         }
     }
-        
+
+    private async void NavigateBack()
+    {
+        await JS.InvokeVoidAsync("history.back");
+    }
 }

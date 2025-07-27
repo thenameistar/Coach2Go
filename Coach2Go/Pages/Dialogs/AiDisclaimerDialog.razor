@@ -1,0 +1,23 @@
+@inject IDialogService DialogService
+@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">AI Disclaimer</MudText>
+        <MudText Typo="Typo.body2" Class="mt-2">
+            Coach2Go uses AI to generate personalised workout suggestions based on your input.
+            These are general fitness recommendations and should not be considered medical advice.
+            Always consult a healthcare professional before starting a new workout programme,
+            especially if you have any health concerns or injuries.
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Primary">Got it</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    void Close() => MudDialog.Close();
+}

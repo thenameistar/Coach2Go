@@ -9,37 +9,39 @@
         <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="@Skip">Skip</MudButton>
     </div>
 
-    <MudText Typo="Typo.h5" Class="onboarding-title">What experience do you have?</MudText>
+    <MudText Typo="Typo.h5" Class="onboarding-title">Where do you train?</MudText>
 
     <div class="onboarding-options">
-        @foreach (var level in experienceLevels)
+        @foreach (var option in trainingTypes)
         {
             <MudButton Variant="Variant.Filled"
-                       Color="@(selectedExperience == level ? Color.Secondary : Color.Primary)"
+                       Color="@(selectedType == option ? Color.Secondary : Color.Primary)"
                        Class="onboarding-button"
-                       OnClick="@(() => SelectExperience(level))">
-                @level
+                       OnClick="@(() => SelectType(option))">
+                @option
             </MudButton>
         }
     </div>
 
     <div class="onboarding-footer">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" Disabled="@string.IsNullOrWhiteSpace(selectedExperience)">Next</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep" Disabled="@string.IsNullOrWhiteSpace(selectedType)">Next</MudButton>
     </div>
 </MudPaper>
 
 @code {
+    [Parameter] public string Type { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> OnTypeSelected { get; set; }
     [Parameter] public EventCallback OnNext { get; set; }
 
-    private string? selectedExperience;
-    private readonly string[] experienceLevels = { "Beginner", "Intermediate", "Advanced" };
+    private string? selectedType;
+    private readonly string[] trainingTypes = { "Bodyweight", "Gym", "Home" };
 
     private async Task NextStep()
     {
-        if (!string.IsNullOrWhiteSpace(selectedExperience))
+        if (!string.IsNullOrWhiteSpace(selectedType))
         {
-            OnboardingState.Experience = selectedExperience;
-            Console.WriteLine($" Saved experience: {OnboardingState.Experience}");
+            OnboardingState.Type = selectedType;
+            await OnTypeSelected.InvokeAsync(selectedType);
         }
 
         await OnNext.InvokeAsync();
@@ -50,9 +52,9 @@
         Navigation.NavigateTo("/dashboard", true);
     }
 
-    void SelectExperience(string level)
+    private void SelectType(string type)
     {
-        selectedExperience = level;
+        selectedType = type;
     }
 }
 <style scoped>

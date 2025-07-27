@@ -8,14 +8,13 @@ using Coach2Go.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddUserSecrets<Program>();
-
 builder.WebHost.UseUrls("http://localhost:5204"); 
 
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: true);
-Console.WriteLine("🔗 Connection string: " + builder.Configuration.GetConnectionString("DefaultConnection"));
+    .AddJsonFile("appsettings.Secrets.json", optional: true, reloadOnChange: true)
+    .AddUserSecrets<Program>();
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

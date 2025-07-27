@@ -72,5 +72,6 @@ namespace Coach2Go.Api.Controllers
             
             return Ok(history);
         }
+        
     }
 }

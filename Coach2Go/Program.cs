@@ -14,6 +14,13 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri("http://localhost:5204")
 });
 
+builder.Services.AddScoped<CustomAuthorisationMessageHandler>();
+
+builder.Services.AddHttpClient("AuthorisedClient", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5204");
+}).AddHttpMessageHandler<CustomAuthorisationMessageHandler>();
+
 builder.Services.AddMudServices();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddBlazoredLocalStorage();

@@ -3,21 +3,32 @@
 @using MudBlazor
 @using MudBlazor.Services
 @inject AuthService AuthService
+@inject NavigationManager Navigation
 
 <MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudPopoverProvider />
 
-<MudLayout Class="main-layout">
-    <MudMainContent Class="main-content">
-        @Body
-    </MudMainContent>
+<div class="page-wrapper">
+    <MudLayout Class="main-layout">
+        <MudMainContent Class="main-content">
+            @Body
+        </MudMainContent>
 
-    <BottomNavMenu />
-</MudLayout>
+        @if (ShouldShowBottomNav)
+        {
+            <BottomNavMenu />
+        }
+    </MudLayout>
+</div>
 
 @code {
     private MudTheme _theme = new();
     private bool _isDarkMode = true;
+
+    private bool ShouldShowBottomNav =>
+        !Navigation.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase)
+        && !Navigation.Uri.Contains("/register", StringComparison.OrdinalIgnoreCase)
+        && !Navigation.Uri.Contains("/onboarding", StringComparison.OrdinalIgnoreCase);
 }

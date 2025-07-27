@@ -58,14 +58,35 @@
         }
     }
 
+    <MudText Typo="Typo.caption" Class="mt-2" Color="Color.Warning">
+    Disclaimer: Coach2Go is not a medical tool. Always consult a healthcare professional before beginning any new fitness programme, especially if you have any medical conditions or injuries.
+    </MudText>
+
+    <MudText Typo="Typo.body2" Class="mt-4">
+        Please review and agree to our 
+        <MudLink Href="/privacy-policy" Target="_blank">Privacy Policy</MudLink> 
+        before continuing.
+    </MudText>
+
+    <MudCheckBox T="bool"
+            @bind-Checked="agreedToPolicy"
+            Label="I agree to the Privacy Policy"
+            Class="mt-2" />
+    
     <div class="onboarding-footer">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="NextStep">Next</MudButton>
+        <MudButton Variant="Variant.Filled" 
+               Color="Color.Primary" 
+               OnClick="NextStep" >
+            Next
+        </MudButton>
     </div>
 
 </MudPaper>
 
 @code {
+    
     [Parameter] public EventCallback OnNext { get; set; }
+
 
     [Inject] private OnboardingState OnboardingState { get; set; } = default!;
     [Inject] private HttpClient Http { get; set; } = default!;
@@ -76,9 +97,27 @@
     private readonly string[] trainingLocations = { "Home", "Gym", "Bodyweight" };
 
     private string? selectedGym;
-    private List<string> gymOptions = new() { "PureGym", "AnytimeFitness" }; 
+    private bool agreedToPolicy = false;
+    private List<string> gymOptions = new();
     private List<GymEquipmentDto> equipmentList = new();
-
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var allEquipment = await Http.GetFromJsonAsync<List<GymEquipmentDto>>("/api/gymequipment");
+           gymOptions = allEquipment?
+               .Select(e => e.GymName)
+               .Where(name => name != null)
+               .Select(name => name!)
+               .Distinct()
+               .OrderBy(name => name)
+               .ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(" Failed to fetch gym options: " + ex.Message);
+        }
+    }
     private async Task NextStep()
     {
         Console.WriteLine($"Selected location: {selectedLocation}");
@@ -99,12 +138,12 @@
             var response = await Http.PostAsJsonAsync("api/user/onboarding", request);
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine("❌ Onboarding failed: " + await response.Content.ReadAsStringAsync());
+                Console.WriteLine(" Onboarding failed: " + await response.Content.ReadAsStringAsync());
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine("❌ Error submitting onboarding: " + ex.Message);
+            Console.WriteLine("Error submitting onboarding: " + ex.Message);
         }
 
         await OnNext.InvokeAsync();

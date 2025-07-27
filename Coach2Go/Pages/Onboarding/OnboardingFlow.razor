@@ -1,16 +1,18 @@
 @page "/onboarding"
 @namespace Coach2Go.Pages.Onboarding
 @using MudBlazor
-@using Coach2Go.Pages.Onboarding
+@using Coach2Go.Shared.Dtos
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager NavigationManager
 
 <MudPaper Class="onboarding-container">
     @if (step == 1)
     {
-        <OnboardingStep1 OnNext="@NextStep" />
+        <OnboardingStep1 Goal="@Goal" OnGoalSelected="v => Goal = v" OnNext="@NextStep" />
     }
     else if (step == 2)
     {
-        <OnboardingStep2 OnNext="@NextStep" />
+        <OnboardingStep2 Type="@Type" OnTypeSelected="v => Type = v" OnNext="@NextStep" />
     }
     else if (step == 3)
     {
@@ -26,9 +28,40 @@
 @code {
     private int step = 1;
 
+    
+    private string Goal = string.Empty;
+    private string Type = string.Empty;
+    private string Experience = string.Empty;
+
     private async Task NextStep()
     {
         step++;
+        if (step == 4)
+        {
+            var onboardingData = new UserOnboardingDto
+            {
+                Goal = Goal,
+                Type = Type,
+                Experience = Experience
+            };
+            try
+            {
+                var client = HttpClientFactory.CreateClient("AuthorisedClient");
+                var response = await client.PostAsJsonAsync("/api/onboarding/complete", onboardingData);
+
+                var responseText = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("➡️ API response: " + responseText);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("⚠️ Failed to complete onboarding.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Exception during onboarding submit: " + ex.Message);
+            }
+        }
+
         await InvokeAsync(StateHasChanged);
     }
 }

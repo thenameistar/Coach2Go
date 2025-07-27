@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
         if (userExists != null)
             return BadRequest("User already exists");
 
-        // 1. Create user first (without WorkoutPlanId yet)
+       
         var user = new User
         {
             Username = request.Username,
@@ -40,20 +40,20 @@ public class AuthController : ControllerBase
         };
 
         _context.Users.Add(user);
-        await _context.SaveChangesAsync(); // Save to get user.Id
+        await _context.SaveChangesAsync();
 
-        // 2. Generate plan and link to user
+        
         var generatedPlan = PlanGenerator.GeneratePlan(request.Goal, request.Type, request.Experience);
         generatedPlan.UserId = user.Id;
 
         _context.WorkoutPlans.Add(generatedPlan);
         await _context.SaveChangesAsync();
 
-        // 3. Update user with plan ID
+       
         user.WorkoutPlanId = generatedPlan.Id;
         await _context.SaveChangesAsync();
 
-        // 4. Return token + user DTO
+       
         var token = GenerateJwtToken(user);
         return Ok(new
         {
@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email
-                // Optional: include Goal/Type/Experience if needed on frontend
+                
             }
         });
     }

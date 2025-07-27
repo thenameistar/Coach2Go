@@ -33,15 +33,43 @@
             Plan
         </MudButton>
     </MudStack>
+    
+    <!-- Warm-Up Section -->
 
-    <!-- Daily Workout Section -->
-    <MudPaper Class="daily-workout-card" Elevation="2" @onclick="@(() => NavigationManager.NavigateTo("/dailyworkout"))" Style="cursor: pointer;">
-        <MudImage Src="@(dailyImage ?? "images/default.jpg")" Alt="Workout image" Class="workout-img" />
+    <MudPaper Class="pa-4 mt-4" Elevation="4" Style="background-color: #000000;">
+       <MudText Typo="Typo.h6">Quick Warm-Up</MudText>
+       <MudImage Src="images/warmup.jpg" Alt="Warm-Up" Style="width: 100%; aspect-ratio: 16 / 9; background-color: #ccc; border-radius: 8px;"/>
+       <MudText Typo="Typo.body2">2-minute warmup before your main workout</MudText>
+
+        @if (!WarmupCompleted)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/warmup"))">
+               Start Warm-Up
+            </MudButton>
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="text-success">✅ Warm-up complete</MudText>
+        }
     </MudPaper>
+    
+    <MudDivider Class="my-4" />
+    <MudText Typo="Typo.h6" Class="px-4">Today’s Workout</MudText>
+    <MudPaper>...</MudPaper>
+    
+    <MudPaper>
+        <!-- Daily Workout Section -->
+        <MudPaper Class="daily-workout-card" Elevation="2" @onclick="@(() => NavigationManager.NavigateTo("/dailyworkout"))" Style="cursor: pointer;">
+            <MudImage Src="@(dailyImage ?? "images/default.jpg")" Alt="Workout image" Class="workout-img" />
+        </MudPaper>
+        
+        <MudText Typo="Typo.subtitle1" Class="text-white mt-2 px-4">
+            @dailyTitle
+        </MudText>
 
-    <MudText Typo="Typo.subtitle1" Class="text-white mt-2 px-4">
-        @dailyTitle
-    </MudText>
+    </MudPaper>
+    
+
 
     <!-- Scrollable Today’s Goals widgets -->
     <MudText Typo="Typo.h6" Class="mb-2 px-4" Style="color: white;">Today’s Goals</MudText>
@@ -50,7 +78,14 @@
 
             <MudPaper Class="goal-card">
                 <MudText Typo="Typo.subtitle1">Write your 3 goals</MudText>
-                <MudTextField T="string" @bind-Value="_goal1" Label="Goal 1" Variant="Variant.Outlined" />
+                @for (int i = 0; i < dailyGoals.Count; i++)
+                {
+                    <MudTextField T="string"
+                        Value="@dailyGoals[i]"
+                        ValueChanged="@(value => OnGoalChanged(i, value))"
+                        Label=@($"Goal {i + 1}") 
+                        Variant="Variant.Outlined" />
+                }
             </MudPaper>
 
             <MudPaper Class="goal-card">
@@ -73,9 +108,19 @@
             <MudPaper Class="goal-card">
                 <MudText Typo="Typo.subtitle1">How do you feel today?</MudText>
                 <MudText Typo="Typo.caption">(Tap the emoji that fits)</MudText>
-                <MudText Class="mt-2" Style="font-size: 1.5rem;">😩 😥 😐 🙂 😊</MudText>
+                <MudStack Row Class="mt-2">
+                    @foreach (var mood in moods)
+                    {
+                        <MudButton Variant="Variant.Text" OnClick="() => selectedMood = mood">@mood</MudButton>
+                    }
+                </MudStack>
             </MudPaper>
 
+            <MudPaper Class="goal-card">
+                <MudText Typo="Typo.subtitle1">Daily Note</MudText>
+                <MudTextField T="string" Label="What's on your mind?" Variant="Variant.Outlined" @bind-Value="diaryNote" Lines="3" />
+            </MudPaper>
+            
             <MudPaper Class="goal-card d-flex align-center justify-center">
                 <MudStack AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.h5">+</MudText>
@@ -83,13 +128,17 @@
                 </MudStack>
             </MudPaper>
 
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2 mx-4" OnClick="SaveDiaryEntryAsync">
+            Save Diary
+            </MudButton>
+
         </div>
     </div>
 
     <MudText Typo="Typo.h6" Class="px-4 mt-4 mb-1" Style="color: white;">My challenge</MudText>
     <MudPaper Class="streak-widget mx-4 mb-6">
-        <MudText Typo="Typo.subtitle2" Class="mb-2" Style="color: white;">7 Day Milestone</MudText>
-        <MudProgressLinear Value="42" Color="Color.Primary" Class="streak-bar" Style="height: 14px;" Rounded />
+      <MudText Typo="Typo.subtitle2" Class="mb-2" Style="color: white;">7 Day Milestone</MudText>
+      <MudProgressLinear Value="@streakProgress" Color="Color.Primary" Class="streak-bar" Style="height: 14px;" Rounded />
     </MudPaper>
 
     <MudText Typo="Typo.h6" Class="px-4 mt-4 mb-2" Style="color: white;">Active Recovery</MudText>
@@ -98,22 +147,42 @@
     </MudPaper>
 
 </MudContainer>
+
 @code {
+
     private string username { get; set; } = "User";
     private string _goal1 = string.Empty;
     private string? dailyImage;
     private string? dailyTitle;
+    private int streakProgress = 0; 
+    private List<string> dailyGoals = new() { "", "", "" };
+    private string diaryNote = string.Empty;
+    private string selectedMood = "";
+    private string[] moods = new[] { "😩", "😥", "😐", "🙂", "😊" };
+    private bool WarmupCompleted = false;
+
+    private async Task StartWarmup()
+    {
+        WarmupCompleted = true;
+        await Task.Delay(2000); 
+    }
+    private void OnGoalChanged(int index, string? value)
+    {
+        if (index >= 0 && index < dailyGoals.Count)
+        {
+            dailyGoals[index] = value ?? "";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         await AuthService.CheckAuthentication();
         username = AuthService.CurrentUser?.Username ?? "User";
+        var userId = AuthService.CurrentUser?.Id ?? 0;
 
         try
         {
-            var userId = AuthService.CurrentUser?.Id ?? 0;
             var plan = await Http.GetFromJsonAsync<WorkoutPlanDto>($"api/workout/daily/{userId}");
-
             var today = DateTime.Today.DayOfWeek.ToString();
             var session = plan?.Sessions?
                 .FirstOrDefault(s => s.Day.Equals(today, StringComparison.OrdinalIgnoreCase))
@@ -126,7 +195,48 @@
         {
             Console.WriteLine("Error loading daily workout for dashboard: " + ex.Message);
         }
+
+        try
+        {
+            var entry = await Http.GetFromJsonAsync<DiaryEntryDto>($"/api/diary/today/{userId}") ?? new();
+            if (entry.Goals != null)
+            {
+                for (int i = 0; i < entry.Goals.Count && i < 3; i++)
+                {
+                    dailyGoals[i] = entry.Goals[i];
+                }
+            }
+
+            diaryNote = entry.Note ?? string.Empty;
+            selectedMood = entry.Mood ?? string.Empty;
+            streakProgress = entry.StreakPercent;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading diary entry: " + ex.Message);
+        }
     }
+
+    private async Task SaveDiaryEntryAsync()
+    {
+      
+        while (dailyGoals.Count < 3)
+            dailyGoals.Add("");
+
+        var userId = AuthService.CurrentUser?.Id ?? 0;
+        var entry = new DiaryEntryDto
+        {
+            UserId = userId,
+            Date = DateTime.Today,
+            Goals = dailyGoals,
+            Note = diaryNote,
+            Mood = selectedMood,
+            StreakPercent = streakProgress
+        };
+
+        await Http.PostAsJsonAsync("/api/diary/today", entry);
+    }
+
 }
 
 <style scoped>

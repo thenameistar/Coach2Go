@@ -34,6 +34,8 @@
 </MudPaper>
 
 @code {
+    [Parameter] public string Goal { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> OnGoalSelected { get; set; }
     [Parameter] public EventCallback OnNext { get; set; }
 
     private string? selectedGoal;

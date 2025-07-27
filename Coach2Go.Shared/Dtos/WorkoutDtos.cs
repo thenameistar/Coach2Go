@@ -19,6 +19,7 @@ namespace Coach2Go.Shared.Dtos
         public string ImagePath { get; set; } = string.Empty;
         public int Duration { get; set; } 
         public string Category { get; set; } = string.Empty;
+        public string Goal { get; set; } = string.Empty;
         public string Day { get; set; } = string.Empty; 
         public int Week { get; set; }
         public List<ExerciseDto> Exercises { get; set; } = new();

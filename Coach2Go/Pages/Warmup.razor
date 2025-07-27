@@ -1,0 +1,135 @@
+@page "/warmup"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject AuthService AuthService
+@using MudBlazor
+@inject IDialogService DialogService
+@using Coach2Go.Pages.Dialogs
+
+<MudPaper Class="pa-4 mt-4" Elevation="4">
+    <MudText Typo="Typo.h5">Quick Warm-Up</MudText>
+
+    <MudDivider Class="my-2" />
+
+    <!-- Timer Display -->
+    <div class="d-flex justify-center mb-2">
+        <MudText Typo="Typo.h4">@($"{minutes:D2}:{seconds:D2}")</MudText>
+    </div>
+
+    <!-- Pause/Resume Button -->
+    <div class="d-flex justify-center mb-2">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@ToggleTimer">
+            @((isRunning ? "Pause" : "Resume"))
+        </MudButton>
+    </div>
+
+    <!-- Exercise List with Icons and Checkboxes -->
+    @foreach (var (exercise, index) in warmupExercises.Select((e, i) => (e, i)))
+    {
+        <MudGrid Class="mt-2 px-2" AlignItems="AlignItems.Center">
+            <MudItem xs="2">
+                <MudPaper Class="icon-box d-flex justify-center align-center" Style="width: 48px; height: 48px; background: linear-gradient(to right, #a24bdc, #c994f8); border-radius: 50%;">
+                    <MudIcon Icon="@Icons.Material.Filled.FitnessCenter" Size="Size.Large" Style="color: white;" />
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="8">
+                <MudText Typo="Typo.subtitle1">@($"{index + 1}. {exercise.Name}")</MudText>
+                <MudText Typo="Typo.caption">@exercise.Details</MudText>
+            </MudItem>
+
+            <MudItem xs="2" Class="d-flex justify-end">
+                <MudCheckBox T="bool" Checked="@exerciseCompleted[index]" @onchange="e => ToggleCheckbox(index, e.Value)" />
+            </MudItem>
+        </MudGrid>
+    }
+
+    <MudDivider Class="my-4" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@ShowWarmupCompleteDialog">
+        Done – Go Back
+    </MudButton>
+</MudPaper>
+
+@code {
+    private List<(string Name, string Details)> warmupExercises = new()
+    {
+        ("Arm Circles", "20 seconds"),
+        ("Jumping Jacks", "30 seconds"),
+        ("Bodyweight Squats", "10 reps")
+    };
+
+    private List<bool> exerciseCompleted = new();
+    private System.Timers.Timer? timer;
+    private int minutes = 0;
+    private int seconds = 0;
+    private bool isRunning = false;
+
+    protected override void OnInitialized()
+    {
+        exerciseCompleted = Enumerable.Repeat(false, warmupExercises.Count).ToList();
+        StartTimer();
+    }
+
+    private void StartTimer()
+    {
+        if (timer == null)
+        {
+            timer = new System.Timers.Timer(1000);
+            timer.Elapsed += OnTimerElapsed;
+        }
+
+        isRunning = true;
+        timer.Start();
+    }
+
+    private void ToggleTimer()
+    {
+        if (isRunning)
+        {
+            isRunning = false;
+            timer?.Stop();
+        }
+        else
+        {
+            isRunning = true;
+            timer?.Start();
+        }
+    }
+
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (!isRunning) return;
+
+        seconds++;
+        if (seconds >= 60)
+        {
+            seconds = 0;
+            minutes++;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleCheckbox(int index, object? value)
+    {
+        if (value is bool b)
+        {
+            exerciseCompleted[index] = b;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ShowWarmupCompleteDialog()
+    {
+        var elapsed = $"{minutes:D2}:{seconds:D2}";
+        var parameters = new DialogParameters
+        {
+            { "ElapsedTime", elapsed }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small };
+        await DialogService.ShowAsync<WarmupCompleteDialog>("Warm-Up Complete!", parameters, options);
+        Navigation.NavigateTo("/dashboard");
+    }
+}
